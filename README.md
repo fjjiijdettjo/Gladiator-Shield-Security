@@ -21,4 +21,4 @@ Gladiator Shield is a high-performance security tool designed to give users full
 Contributions are welcome! If you have a fix or a new security feature, feel free to fork the repo and submit a pull request.
 
 ---
-*Created with passion by [Your Name/Username]*
+*Created with passion by Gladiator Tunisia
