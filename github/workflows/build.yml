@@ -1,4 +1,4 @@
-name: Build Gladiator Shield APK V1
+name: Final Build Gladiator Shield
 
 on:
   push:
