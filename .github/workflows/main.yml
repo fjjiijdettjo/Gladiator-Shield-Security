@@ -1,4 +1,4 @@
-name: Gladiator Shield Final Build
+name: Gladiator Shield Victory Build
 on:
   workflow_dispatch:
 jobs:
@@ -13,14 +13,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle Directly
-        # هذا الأمر يتجاوز ملف gradlew المعطوب ويستخدم المحرك المثبت في النظام
+      - name: Generate Wrapper and Build
+        # هذا الجزء سيقوم بتحميل Gradle وبناء ملف gradlew من الصفر داخل السيرفر
         run: |
           gradle wrapper --gradle-version 8.0
-          gradle assembleDebug --stacktrace --no-daemon
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Gladiator-Shield-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          # سنستخدم مساراً أعمّ لضمان إيجاد الملف مهما كان مكانه
+          path: "**/*.apk"
