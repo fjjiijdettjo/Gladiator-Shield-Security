@@ -1,4 +1,4 @@
-name: Gladiator Victory Build Final
+name: Gladiator Shield Final Victory
 on:
   workflow_dispatch:
 
@@ -15,18 +15,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Force Wrapper Generation
-        # هذا الأمر سيخلق المحرك ويربطه بالمشروع فوراً
+      - name: Re-Structure Project
+        # هذا الجزء سيصلح بعثرة الملفات التي تظهر في الصورة 159
         run: |
+          mkdir -p app/src/main
+          mv src app/src/main/ || true
+          mv AndroidManifest.xml app/src/main/ || true
+          # صنع ملف بناء أساسي إذا كان مفقوداً
+          if [ ! -f "build.gradle" ]; then
+            echo "apply plugin: 'com.android.application'" > build.gradle
+          fi
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
 
-      - name: Build APK (Search All Projects)
-        # أضفت نقطتين (:) قبل الأمر لإجبار Gradle على فحص كافة الوحدات
-        run: ./gradlew :app:assembleDebug --no-daemon || ./gradlew assembleDebug --no-daemon
+      - name: Build APK
+        # سنستخدم الأمر العام ليتخطى تسمية المجلدات
+        run: gradle assembleDebug --no-daemon
 
-      - name: Export APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-APK
+          name: Gladiator-Shield-Success
           path: "**/*.apk"
