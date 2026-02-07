@@ -1,4 +1,4 @@
-name: Gladiator Victory Build
+name: Gladiator Victory Build Final
 on:
   workflow_dispatch:
 
@@ -15,20 +15,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Auto-Fix Project Structure
-        # هذا السطر السحري سيعيد تنظيم الملفات إذا كانت مبعثرة
+      - name: Force Wrapper Generation
+        # هذا الأمر سيخلق المحرك ويربطه بالمشروع فوراً
         run: |
-          if [ ! -d "app" ]; then mkdir -p app; fi
-          find . -maxdepth 1 -name "src" -exec mv {} app/ \;
-          find . -maxdepth 1 -name "AndroidManifest.xml" -exec mv {} app/ \;
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
 
-      - name: Build APK Cleanly
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Build APK (Search All Projects)
+        # أضفت نقطتين (:) قبل الأمر لإجبار Gradle على فحص كافة الوحدات
+        run: ./gradlew :app:assembleDebug --no-daemon || ./gradlew assembleDebug --no-daemon
 
       - name: Export APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Final
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: Gladiator-Shield-APK
+          path: "**/*.apk"
