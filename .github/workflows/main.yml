@@ -1,4 +1,4 @@
-name: Gladiator Shield Build
+name: Gladiator Shield Direct Build
 on:
   workflow_dispatch:
 
@@ -6,37 +6,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Reconstruct Project Structure
-        # هذا الجزء هو "الميكانيكي" الذي سيرتب الملفات المعطوبة
+      - name: Auto-Fix and Build
         run: |
-          mkdir -p app/src/main/java
-          # نقل ملفات الأكواد والمجلدات برمجياً لداخل مجلد app
-          [ -d "src" ] && mv src/* app/src/main/ || echo "No src folder"
-          [ -f "AndroidManifest.xml" ] && mv AndroidManifest.xml app/src/main/ || echo "No Manifest"
-          [ -f "build.gradle" ] && cp build.gradle app/build.gradle || echo "No build.gradle"
-          
-          # إنشاء ملف settings.gradle لربط المجلد الجديد
+          # صنع المجلدات المطلوبة
+          mkdir -p app/src/main
+          # نقل ملفاتك المبعثرة لمكانها الصحيح برمجياً
+          cp -r src/* app/src/main/ 2>/dev/null || true
+          cp AndroidManifest.xml app/src/main/ 2>/dev/null || true
+          cp build.gradle app/build.gradle 2>/dev/null || true
           echo "include ':app'" > settings.gradle
-          
-          # بناء المحرك (Gradle Wrapper)
+          # تشغيل المحرك والبناء
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
-
-      - name: Build APK
-        # الآن سيجد النظام المجلد ويقوم بالبناء
-        run: ./gradlew :app:assembleDebug --no-daemon
+          ./gradlew :app:assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Result
+          name: Gladiator-Shield-APK
           path: "**/*.apk"
