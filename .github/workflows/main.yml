@@ -1,4 +1,4 @@
-name: Final Build Gladiator Shield
+name: Gladiator Shield Emergency Build
 on:
   workflow_dispatch:
 jobs:
@@ -11,12 +11,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build APK (Auto-Fix Permissions)
-        run: |
-          chmod +x gradlew || true
-          ./gradlew assembleDebug --stacktrace
-      - name: Upload APK
+      - name: Initialize Gradle Wrapper
+        run: gradle wrapper
+      - name: Build APK with Force
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-APK
+          name: Gladiator-Shield-Final
           path: "**/*.apk"
