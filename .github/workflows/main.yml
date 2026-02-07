@@ -1,4 +1,4 @@
-name: Gladiator Shield Final Victory
+name: Gladiator Shield Emergency Build
 on:
   workflow_dispatch:
 
@@ -15,25 +15,27 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Re-Structure Project
-        # هذا الجزء سيصلح بعثرة الملفات التي تظهر في الصورة 159
+      - name: Force Structure & Build
         run: |
+          # 1. تنظيف أي محاولات سابقة
+          rm -rf app
           mkdir -p app/src/main
-          mv src app/src/main/ || true
-          mv AndroidManifest.xml app/src/main/ || true
-          # صنع ملف بناء أساسي إذا كان مفقوداً
-          if [ ! -f "build.gradle" ]; then
-            echo "apply plugin: 'com.android.application'" > build.gradle
-          fi
+          
+          # 2. نقل الملفات من الجذر إلى مجلد app برمجياً
+          [ -d "src" ] && cp -r src/* app/src/main/ || echo "src not found"
+          [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || echo "Manifest not found"
+          [ -f "build.gradle" ] && cp build.gradle app/build.gradle || echo "build.gradle not found"
+          
+          # 3. إنشاء ملف settings.gradle ليربط كل شيء
+          echo "include ':app'" > settings.gradle
+          
+          # 4. البناء
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Build APK
-        # سنستخدم الأمر العام ليتخطى تسمية المجلدات
-        run: gradle assembleDebug --no-daemon
-
-      - name: Upload APK
+      - name: Export APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Success
+          name: Gladiator-Shield-APK
           path: "**/*.apk"
