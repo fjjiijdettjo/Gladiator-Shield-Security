@@ -1,4 +1,4 @@
-name: Gladiator Shield Emergency Build
+name: Gladiator Shield Build
 on:
   workflow_dispatch:
 
@@ -15,27 +15,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Force Structure & Build
+      - name: Reconstruct Project Structure
+        # هذا الجزء هو "الميكانيكي" الذي سيرتب الملفات المعطوبة
         run: |
-          # 1. تنظيف أي محاولات سابقة
-          rm -rf app
-          mkdir -p app/src/main
+          mkdir -p app/src/main/java
+          # نقل ملفات الأكواد والمجلدات برمجياً لداخل مجلد app
+          [ -d "src" ] && mv src/* app/src/main/ || echo "No src folder"
+          [ -f "AndroidManifest.xml" ] && mv AndroidManifest.xml app/src/main/ || echo "No Manifest"
+          [ -f "build.gradle" ] && cp build.gradle app/build.gradle || echo "No build.gradle"
           
-          # 2. نقل الملفات من الجذر إلى مجلد app برمجياً
-          [ -d "src" ] && cp -r src/* app/src/main/ || echo "src not found"
-          [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || echo "Manifest not found"
-          [ -f "build.gradle" ] && cp build.gradle app/build.gradle || echo "build.gradle not found"
-          
-          # 3. إنشاء ملف settings.gradle ليربط كل شيء
+          # إنشاء ملف settings.gradle لربط المجلد الجديد
           echo "include ':app'" > settings.gradle
           
-          # 4. البناء
+          # بناء المحرك (Gradle Wrapper)
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
 
-      - name: Export APK
+      - name: Build APK
+        # الآن سيجد النظام المجلد ويقوم بالبناء
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-APK
+          name: Gladiator-Shield-Result
           path: "**/*.apk"
