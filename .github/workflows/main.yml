@@ -1,6 +1,5 @@
-name: Gladiator Shield Direct Build
-on:
-  workflow_dispatch:
+name: Gladiator Shield Final Victory
+on: [workflow_dispatch]
 
 jobs:
   build:
@@ -12,22 +11,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Auto-Fix and Build
+      - name: Force Structure Correction
+        # هذا الجزء سيصلح "نفس المشكل" عبر فرض إعدادات صحيحة
         run: |
-          # صنع المجلدات المطلوبة
-          mkdir -p app/src/main
-          # نقل ملفاتك المبعثرة لمكانها الصحيح برمجياً
-          cp -r src/* app/src/main/ 2>/dev/null || true
-          cp AndroidManifest.xml app/src/main/ 2>/dev/null || true
-          cp build.gradle app/build.gradle 2>/dev/null || true
-          echo "include ':app'" > settings.gradle
-          # تشغيل المحرك والبناء
+          # 1. مسح أي إعدادات خاطئة وكتابة إعدادات تناسب وجود الملفات في الواجهة
+          echo "rootProject.name = 'GladiatorShield'" > settings.gradle
+          
+          # 2. إضافة إعدادات الذاكرة الضرورية
+          echo "android.useAndroidX=true" > gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+
+          # 3. بناء المحرك وتشغيله بقوة
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
-          ./gradlew :app:assembleDebug --no-daemon
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Gladiator-Shield-APK
-          path: "**/*.apk"
+          ./gradlew assembleDebug --no-daemon --stacktrace
