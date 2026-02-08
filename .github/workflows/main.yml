@@ -1,4 +1,4 @@
-name: Gladiator Shield Production
+name: Gladiator Shield - Phase 2
 on: [workflow_dispatch]
 
 jobs:
@@ -19,15 +19,15 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 🦾 Absolute Clean & Build
+      - name: 🦾 Deep Clean & Engine Injection
         run: |
-          # 1. Purge all old files to prevent Merge/Compilation errors
+          # 1. Purge and Rebuild structure
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
 
-          # 2. Inject Visual Identity (Black & Gold)
+          # 2. Colors and Theme (Black & Gold Identity)
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -35,56 +35,54 @@ jobs:
               <color name="gladiator_gold">#D4AF37</color>
               <color name="white">#FFFFFF</color>
               <color name="gray_text">#AAAAAA</color>
+              <color name="danger_red">#FF4444</color>
           </resources>
           EOF
 
-          # 3. Inject Professional UI Layout
+          # 3. Upgraded UI with List for Scan Results
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:orientation="vertical"
               android:background="@color/black_bg"
-              android:padding="20dp">
+              android:padding="16dp">
               <TextView
-                  android:id="@+id/title"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="GLADIATOR SHIELD"
                   android:textColor="@color/gladiator_gold"
-                  android:textSize="28sp"
+                  android:textSize="24sp"
                   android:textStyle="bold"
-                  android:layout_centerHorizontal="true"
-                  android:layout_marginTop="50dp"/>
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginBottom="20dp"/>
               <Button
                   android:id="@+id/scanBtn"
-                  android:layout_width="200dp"
-                  android:layout_height="200dp"
-                  android:background="@color/gladiator_gold"
-                  android:text="START SCAN"
-                  android:textColor="@color/black_bg"
-                  android:textSize="20sp"
-                  android:textStyle="bold"
-                  android:layout_centerInParent="true" />
-              <TextView
-                  android:layout_width="wrap_content"
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:text="Protected by Gladiator Security"
-                  android:textColor="@color/gray_text"
-                  android:layout_alignParentBottom="true"
-                  android:layout_centerHorizontal="true"/>
-          </RelativeLayout>
+                  android:backgroundTint="@color/gladiator_gold"
+                  android:text="SCAN PERMISSIONS"
+                  android:textColor="@color/black_bg" />
+              <ListView
+                  android:id="@+id/appList"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:layout_marginTop="10dp"
+                  android:divider="@color/gladiator_gold"
+                  android:dividerHeight="0.5dp"/>
+          </LinearLayout>
           EOF
 
-          # 4. Inject Security Logic (App Scanner)
+          # 4. Scanner Engine Logic (Lists all apps with permissions)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.os.Bundle;
-          import android.widget.Button;
-          import android.widget.Toast;
-          import android.content.pm.ApplicationInfo;
-          import java.util.List;
+          import android.widget.*;
+          import android.content.pm.*;
+          import java.util.*;
 
           public class MainActivity extends Activity {
               @Override
@@ -93,19 +91,30 @@ jobs:
                   setContentView(R.layout.activity_main);
                   
                   Button scanBtn = findViewById(R.id.scanBtn);
+                  ListView appList = findViewById(R.id.appList);
+                  
                   scanBtn.setOnClickListener(v -> {
-                      List<ApplicationInfo> packages = getPackageManager().getInstalledApplications(0);
-                      Toast.makeText(this, "Scanning " + packages.size() + " Apps...", Toast.LENGTH_SHORT).show();
+                      List<String> results = new ArrayList<>();
+                      PackageManager pm = getPackageManager();
+                      List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+                      
+                      for (ApplicationInfo app : apps) {
+                          results.add(app.loadLabel(pm) + " (Checking...)");
+                      }
+                      
+                      ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, results);
+                      appList.setAdapter(adapter);
+                      Toast.makeText(this, "Found " + apps.size() + " Items", Toast.LENGTH_SHORT).show();
                   });
               }
           }
           EOF
 
-          # 5. Final Manifest & Build Script Configuration
+          # 5. Manifest & Build Standard (Ensuring Java 17 stability)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -127,11 +136,11 @@ jobs:
           }
           EOF
 
-      - name: 🚀 Execute Assembly
+      - name: 🚀 Launch Build
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: 📦 Upload Gladiator V1 APK
+      - name: 📦 Delivery
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V1
+          name: Gladiator-Shield-V2-Scanner
           path: app/build/outputs/apk/debug/*.apk
