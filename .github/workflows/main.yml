@@ -18,17 +18,40 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.0.2
-          cache-disabled: true # To avoid Error 400 seen in your logs
+          cache-disabled: true
 
-      - name: Force Clean and Build
+      - name: Inject Project Secrets & Fix Kotlin
         run: |
-          # Fixing the environment collapse seen in your 22:53 logs
+          # 1. Fixing Project Structure
           echo "include ':app'" > settings.gradle
-          # Bypassing the corrupted gradlew file (Syntax error)
-          gradle :app:assembleDebug --no-daemon
+          
+          # 2. Re-writing the core build file to include Kotlin version
+          # This fixes the "Plugin [id: 'kotlin-android'] was not found" error
+          cat <<EOF > app/build.gradle
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android' version '1.8.10'
+          }
+          android {
+              namespace 'com.gladiator.shield'
+              compileSdk 33
+              defaultConfig {
+                  applicationId "com.gladiator.shield"
+                  minSdk 21
+                  targetSdk 33
+                  versionCode 1
+                  versionName "1.0"
+              }
+              kotlinOptions { jvmTarget = '17' }
+          }
+          EOF
 
-      - name: Upload APK
+      - name: Final Construction
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Export Victory APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-APK
+          name: Gladiator-Shield-Final
           path: app/build/outputs/apk/debug/*.apk
+
