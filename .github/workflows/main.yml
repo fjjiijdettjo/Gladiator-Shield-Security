@@ -1,4 +1,4 @@
-name: Gladiator Shield Victory
+name: Gladiator Shield Final Force
 on: [workflow_dispatch]
 
 jobs:
@@ -13,13 +13,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # الضربة القاضية: تثبيت Gradle 8.0 مباشرة قبل أي خطوة أخرى
-      - name: Setup Gradle 8.0 Directly
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.0
+          gradle-version: 8.0.2 # التحديد بالدقة المطلوبة
 
-      - name: Reconstruct Project Structure
+      - name: Prepare Project Structure
         run: |
           mkdir -p app/src/main
           echo "include ':app'" > settings.gradle
@@ -41,5 +40,4 @@ jobs:
           [ -d "src" ] && cp -r src/* app/src/main/ || true
 
       - name: Build APK
-        # هنا سنستخدم 'gradle' مباشرة وليس './gradlew' لأننا ثبتناه في الخطوة السابقة
         run: gradle :app:assembleDebug --no-daemon
