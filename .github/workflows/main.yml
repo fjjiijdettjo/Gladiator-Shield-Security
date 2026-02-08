@@ -1,3 +1,4 @@
+
 name: Gladiator Shield Victory
 on: [workflow_dispatch]
 
@@ -11,25 +12,38 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Force Relocate Files
+      - name: Inject Android Core
         run: |
-          # 1. إنشاء المجلد المطلوب
+          # 1. إنشاء الهيكل الصحيح
           mkdir -p app/src/main
           
-          # 2. نقل ملف البناء من الواجهة إلى داخل مجلد app
-          if [ -f "build.gradle" ]; then
-            mv build.gradle app/build.gradle
-          fi
-          
-          # 3. نقل باقي الملفات (Manifest و src) للداخل
-          [ -f "AndroidManifest.xml" ] && mv AndroidManifest.xml app/src/main/ || true
-          [ -d "src" ] && mv src/* app/src/main/ || true
-          
-          # 4. إصلاح ملف الإعدادات ليعرف أن العمل أصبح داخل app
+          # 2. إنشاء ملف settings.gradle لربط المشروع
           echo "include ':app'" > settings.gradle
+          
+          # 3. بناء ملف التطبيق الحقيقي (دمج الكود الذي أرسلته مع متطلبات أندرويد)
+          cat <<EOF > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.gladiator.shield'
+              compileSdk 33
+              defaultConfig {
+                  applicationId "com.gladiator.shield"
+                  minSdk 21
+                  targetSdk 33
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          EOF
+
+          # 4. نقل ملفاتك الأصلية لمكانها الصحيح
+          [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || echo "<?xml version='1.0' encoding='utf-8'?><manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.gladiator.shield'></manifest>" > app/src/main/AndroidManifest.xml
+          [ -d "src" ] && cp -r src/* app/src/main/ || true
 
       - name: Build APK
         run: |
-          gradle wrapper --gradle-version 8.0
+          gradle wrapper --gradle-version 8.0.2
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
