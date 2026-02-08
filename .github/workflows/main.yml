@@ -1,4 +1,4 @@
-name: Gladiator Shield - Phase 1: Security Core
+name: Gladiator Shield Production
 on: [workflow_dispatch]
 
 jobs:
@@ -19,15 +19,15 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 🛡️ Building Gladiator Shield UI & Logic
+      - name: 🦾 Absolute Clean & Build
         run: |
-          # 1. تصفير البيئة لضمان النقاء البرمجي
+          # 1. Purge all old files to prevent Merge/Compilation errors
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
 
-          # 2. حقن الهوية البصرية (Black & Gold)
+          # 2. Inject Visual Identity (Black & Gold)
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -38,7 +38,7 @@ jobs:
           </resources>
           EOF
 
-          # 3. تصميم واجهة الـ Dashboard
+          # 3. Inject Professional UI Layout
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -76,7 +76,7 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # 4. برمجة منطق الحماية (Permission Scanner Logic)
+          # 4. Inject Security Logic (App Scanner)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -101,7 +101,7 @@ jobs:
           }
           EOF
 
-          # 5. تحديث الـ Manifest والـ Build
+          # 5. Final Manifest & Build Script Configuration
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -127,10 +127,10 @@ jobs:
           }
           EOF
 
-      - name: 🚀 Force Assemble
+      - name: 🚀 Execute Assembly
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: 📦 Deliver Gladiator Shield v1.0
+      - name: 📦 Upload Gladiator V1 APK
         uses: actions/upload-artifact@v4
         with:
           name: Gladiator-Shield-V1
