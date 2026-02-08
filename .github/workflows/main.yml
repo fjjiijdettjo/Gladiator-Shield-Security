@@ -1,4 +1,4 @@
-name: Gladiator Shield Emergency Force
+name: Gladiator Shield Victory
 on: [workflow_dispatch]
 
 jobs:
@@ -6,28 +6,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Wipe & Rebuild Structure
-        # سنقوم بمسح ملفات الإعدادات التي قد تكون تالفة وننشئها من جديد
+      - name: Force Relocate Files
         run: |
-          rm -f settings.gradle gradle.properties
-          echo "rootProject.name = 'GladiatorShield'" > settings.gradle
-          echo "include ':app'" >> settings.gradle
-          mkdir -p app
-          # نقل ملف البناء الخاص بك للداخل أو إنشاء واحد افتراضي إذا فشل
-          cp build.gradle app/build.gradle || echo "apply plugin: 'com.android.application'" > app/build.gradle
+          # 1. إنشاء المجلد المطلوب
+          mkdir -p app/src/main
           
-          # ضبط الذاكرة لمنع الانهيار الذي أرسلته
-          echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
-          echo "org.gradle.daemon=false" >> gradle.properties
+          # 2. نقل ملف البناء من الواجهة إلى داخل مجلد app
+          if [ -f "build.gradle" ]; then
+            mv build.gradle app/build.gradle
+          fi
+          
+          # 3. نقل باقي الملفات (Manifest و src) للداخل
+          [ -f "AndroidManifest.xml" ] && mv AndroidManifest.xml app/src/main/ || true
+          [ -d "src" ] && mv src/* app/src/main/ || true
+          
+          # 4. إصلاح ملف الإعدادات ليعرف أن العمل أصبح داخل app
+          echo "include ':app'" > settings.gradle
 
-      - name: Build With New Wrapper
+      - name: Build APK
         run: |
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
