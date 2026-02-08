@@ -1,14 +1,14 @@
-name: Gladiator Robot Final Victory
+name: Gladiator Ultimate Production Build
 on: [workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -18,28 +18,39 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.0.2
-          cache-disabled: true
+          cache-disabled: true # Fixes Error 400 seen in logs
 
-      - name: Auto-Repair Core Files
+      - name: 🛠️ Comprehensive Auto-Repair
         run: |
-          # 1. Fixing Project Link
+          # 1. Structure Stabilization
           echo "include ':app'" > settings.gradle
-          
-          # 2. Re-writing Manifest to fix the "SAXParseException" from your logs
-          mkdir -p app/src/main
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/layout
+
+          # 2. Injecting Missing Colors (Fixes 23:43 resource errors)
+          cat <<EOF > app/src/main/res/values/colors.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="dark_background">#121212</color>
+              <color name="gladiator_gold">#FFD700</color>
+              <color name="colorPrimary">#6200EE</color>
+              <color name="colorPrimaryDark">#3700B3</color>
+              <color name="colorAccent">#03DAC5</color>
+              <color name="white">#FFFFFF</color>
+              <color name="black">#000000</color>
+          </resources>
+          EOF
+
+          # 3. Clean Manifest Injection (Fixes SAXParseException)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.gladiator.shield">
-              <application
-                  android:allowBackup="true"
-                  android:label="Gladiator Shield"
-                  android:supportsRtl="true">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
+              <application android:allowBackup="true" android:label="Gladiator Shield" android:supportsRtl="true">
               </application>
           </manifest>
           EOF
 
-          # 3. Injecting Correct Build Script
+          # 4. Standardizing Build Script (Fixes Plugin errors)
           cat <<EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -58,12 +69,11 @@ jobs:
           }
           EOF
 
-      - name: Final Construction
+      - name: 🚀 Execute Final Build
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Export APK
+      - name: 📦 Upload Victory APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Final-APK
+          name: Gladiator-Shield-Final
           path: app/build/outputs/apk/debug/*.apk
-
