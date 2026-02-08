@@ -1,14 +1,14 @@
-name: Gladiator Shield Final Victory
+name: Gladiator Robot Build
 on: [workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -18,15 +18,17 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.0.2
-          cache-disabled: true
+          cache-disabled: true # To avoid Error 400 seen in your logs
 
-      - name: Build APK Directly
-        # We use 'gradle' command directly to bypass your corrupted gradlew file
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Force Clean and Build
+        run: |
+          # Fixing the environment collapse seen in your 22:53 logs
+          echo "include ':app'" > settings.gradle
+          # Bypassing the corrupted gradlew file (Syntax error)
+          gradle :app:assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-App
+          name: Gladiator-Shield-APK
           path: app/build/outputs/apk/debug/*.apk
-
