@@ -1,5 +1,4 @@
-
-name: Gladiator Shield Victory
+name: Gladiator Shield Victory Day
 on: [workflow_dispatch]
 
 jobs:
@@ -12,19 +11,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Inject Android Core
+      - name: Reconstruct Project
         run: |
-          # 1. إنشاء الهيكل الصحيح
           mkdir -p app/src/main
-          
-          # 2. إنشاء ملف settings.gradle لربط المشروع
           echo "include ':app'" > settings.gradle
-          
-          # 3. بناء ملف التطبيق الحقيقي (دمج الكود الذي أرسلته مع متطلبات أندرويد)
           cat <<EOF > app/build.gradle
-          plugins {
-              id 'com.android.application'
-          }
+          plugins { id 'com.android.application' }
           android {
               namespace 'com.gladiator.shield'
               compileSdk 33
@@ -37,9 +29,7 @@ jobs:
               }
           }
           EOF
-
-          # 4. نقل ملفاتك الأصلية لمكانها الصحيح
-          [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || echo "<?xml version='1.0' encoding='utf-8'?><manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.gladiator.shield'></manifest>" > app/src/main/AndroidManifest.xml
+          [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || true
           [ -d "src" ] && cp -r src/* app/src/main/ || true
 
       - name: Build APK
