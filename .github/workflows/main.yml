@@ -1,4 +1,4 @@
-name: Gladiator Shield Production Build
+name: Gladiator Shield Final Victory
 on: [workflow_dispatch]
 
 jobs:
@@ -18,16 +18,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.0.2
-          cache-disabled: true # Disabled to bypass the Error 400 you faced
+          cache-disabled: true
 
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
-
-      - name: Assemble Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+      - name: Build APK Directly
+        # We use 'gradle' command directly to bypass your corrupted gradlew file
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Gladiator-Shield-App
+          path: app/build/outputs/apk/debug/*.apk
+
