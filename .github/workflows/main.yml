@@ -1,4 +1,4 @@
-name: Gladiator Shield Final Victory
+name: Gladiator Shield Victory
 on: [workflow_dispatch]
 
 jobs:
@@ -11,17 +11,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Force Structure Correction
-        # هذا الجزء سيصلح "نفس المشكل" عبر فرض إعدادات صحيحة
+      - name: Fix Environment & Memory
         run: |
-          # 1. مسح أي إعدادات خاطئة وكتابة إعدادات تناسب وجود الملفات في الواجهة
-          echo "rootProject.name = 'GladiatorShield'" > settings.gradle
+          # 1. منع الـ Daemon المسبب للانهيار وضبط الذاكرة
+          echo "org.gradle.daemon=false" > gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> gradle.properties
           
-          # 2. إضافة إعدادات الذاكرة الضرورية
-          echo "android.useAndroidX=true" > gradle.properties
-          echo "android.enableJetifier=true" >> gradle.properties
+          # 2. ضمان وجود ملف إعدادات صالح
+          echo "rootProject.name = 'GladiatorShield'" > settings.gradle
 
-          # 3. بناء المحرك وتشغيله بقوة
+      - name: Build Without Daemon
+        # استخدام أمر البناء مع تعطيل المحرك الخلفي لتجنب الخطأ الذي أرسلته
+        run: |
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
