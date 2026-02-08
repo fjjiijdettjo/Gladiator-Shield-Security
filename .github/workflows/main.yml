@@ -1,4 +1,4 @@
-name: Gladiator Shield Final Force Build
+name: Gladiator Shield - Phase 1: Security Core
 on: [workflow_dispatch]
 
 jobs:
@@ -19,28 +19,93 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 🦾 Total Reconstruction (The Nuclear Option)
+      - name: 🛡️ Building Gladiator Shield UI & Logic
         run: |
-          # 1. Clean everything to stop "Compilation Errors" seen at 00:13
+          # 1. تصفير البيئة لضمان النقاء البرمجي
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/layout
 
-          # 2. Inject a Minimal Working Java Main Activity
+          # 2. حقن الهوية البصرية (Black & Gold)
+          cat <<EOF > app/src/main/res/values/colors.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="black_bg">#0A0A0A</color>
+              <color name="gladiator_gold">#D4AF37</color>
+              <color name="white">#FFFFFF</color>
+              <color name="gray_text">#AAAAAA</color>
+          </resources>
+          EOF
+
+          # 3. تصميم واجهة الـ Dashboard
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/black_bg"
+              android:padding="20dp">
+              <TextView
+                  android:id="@+id/title"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="GLADIATOR SHIELD"
+                  android:textColor="@color/gladiator_gold"
+                  android:textSize="28sp"
+                  android:textStyle="bold"
+                  android:layout_centerHorizontal="true"
+                  android:layout_marginTop="50dp"/>
+              <Button
+                  android:id="@+id/scanBtn"
+                  android:layout_width="200dp"
+                  android:layout_height="200dp"
+                  android:background="@color/gladiator_gold"
+                  android:text="START SCAN"
+                  android:textColor="@color/black_bg"
+                  android:textSize="20sp"
+                  android:textStyle="bold"
+                  android:layout_centerInParent="true" />
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Protected by Gladiator Security"
+                  android:textColor="@color/gray_text"
+                  android:layout_alignParentBottom="true"
+                  android:layout_centerHorizontal="true"/>
+          </RelativeLayout>
+          EOF
+
+          # 4. برمجة منطق الحماية (Permission Scanner Logic)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.os.Bundle;
+          import android.widget.Button;
+          import android.widget.Toast;
+          import android.content.pm.ApplicationInfo;
+          import java.util.List;
+
           public class MainActivity extends Activity {
-              @Override protected void onCreate(Bundle s) { super.onCreate(s); }
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
+                  
+                  Button scanBtn = findViewById(R.id.scanBtn);
+                  scanBtn.setOnClickListener(v -> {
+                      List<ApplicationInfo> packages = getPackageManager().getInstalledApplications(0);
+                      Toast.makeText(this, "Scanning " + packages.size() + " Apps...", Toast.LENGTH_SHORT).show();
+                  });
+              }
           }
           EOF
 
-          # 3. Inject a Valid Clean Manifest
+          # 5. تحديث الـ Manifest والـ Build
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield">
+              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -51,7 +116,6 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Finalizing Build Script with Java 17 Compatibility
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
@@ -66,8 +130,8 @@ jobs:
       - name: 🚀 Force Assemble
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: 📦 Deliver Result
+      - name: 📦 Deliver Gladiator Shield v1.0
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Result
+          name: Gladiator-Shield-V1
           path: app/build/outputs/apk/debug/*.apk
