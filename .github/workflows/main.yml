@@ -158,4 +158,3 @@ jobs:
         with:
           name: Gladiator-Shield-V3-Detector
           path: app/build/outputs/apk/debug/*.apk
-
