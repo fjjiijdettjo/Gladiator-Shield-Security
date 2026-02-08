@@ -1,4 +1,4 @@
-name: Gladiator Ultimate Victory
+name: Gladiator Final Victory Build
 on: [workflow_dispatch]
 
 jobs:
@@ -20,13 +20,25 @@ jobs:
           gradle-version: 8.0.2
           cache-disabled: true
 
-      - name: 🤖 Full Auto-Repair & Alignment
+      - name: 🧹 Deep Clean & Auto-Repair
         run: |
-          # 1. Fixing Project structure
-          echo "include ':app'" > settings.gradle
+          # 1. Clean old corrupt files that caused the Merge Failure
+          rm -rf app/src/main/AndroidManifest.xml
           mkdir -p app/src/main/res/values
+          
+          # 2. Inject Fresh Clean Manifest
+          cat <<EOF > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:allowBackup="true"
+                  android:label="Gladiator Shield"
+                  android:supportsRtl="true">
+              </application>
+          </manifest>
+          EOF
 
-          # 2. Injecting missing colors from previous logs (23:43 fix)
+          # 3. Inject Missing Colors (Fixing previous resource errors)
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -37,7 +49,8 @@ jobs:
           </resources>
           EOF
 
-          # 3. Fixing Java/Kotlin compatibility (23:57 fix)
+          # 4. Align Java and Kotlin to Version 17 (Fixing 23:57 jvm target error)
+          echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -57,17 +70,15 @@ jobs:
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
+              kotlinOptions { jvmTarget = '17' }
           }
           EOF
 
-      - name: 🚀 Final Assembly
+      - name: 🚀 Launch Final Assembly
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: 📦 Deliver APK
+      - name: 📦 Deliver Gladiator APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Ready
+          name: Gladiator-Shield-Final
           path: app/build/outputs/apk/debug/*.apk
