@@ -1,4 +1,4 @@
-name: Gladiator Shield - Phase 2
+name: Gladiator Shield - Phase 3: Spyware Detector
 on: [workflow_dispatch]
 
 jobs:
@@ -19,27 +19,27 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 🦾 Deep Clean & Engine Injection
+      - name: 🦾 Absolute Purge & Spyware Logic Injection
         run: |
-          # 1. Purge and Rebuild structure
+          # 1. Cleaning Environment
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
 
-          # 2. Colors and Theme (Black & Gold Identity)
+          # 2. Colors for Security Alerts
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <color name="black_bg">#0A0A0A</color>
               <color name="gladiator_gold">#D4AF37</color>
+              <color name="danger_red">#FF0000</color>
+              <color name="safe_green">#00FF00</color>
               <color name="white">#FFFFFF</color>
-              <color name="gray_text">#AAAAAA</color>
-              <color name="danger_red">#FF4444</color>
           </resources>
           EOF
 
-          # 3. Upgraded UI with List for Scan Results
+          # 3. Enhanced UI for Security Status
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -51,31 +51,37 @@ jobs:
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="GLADIATOR SHIELD"
+                  android:text="GLADIATOR SPY-DETECTOR"
                   android:textColor="@color/gladiator_gold"
-                  android:textSize="24sp"
+                  android:textSize="22sp"
                   android:textStyle="bold"
                   android:layout_gravity="center_horizontal"
-                  android:layout_marginBottom="20dp"/>
+                  android:layout_marginBottom="15dp"/>
               <Button
                   android:id="@+id/scanBtn"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:backgroundTint="@color/gladiator_gold"
-                  android:text="SCAN PERMISSIONS"
+                  android:text="START DEEP SCAN"
                   android:textColor="@color/black_bg" />
+              <TextView
+                  android:id="@+id/statusText"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Ready for scan..."
+                  android:textColor="@color/white"
+                  android:layout_marginTop="10dp"/>
               <ListView
                   android:id="@+id/appList"
                   android:layout_width="match_parent"
                   android:layout_height="0dp"
                   android:layout_weight="1"
-                  android:layout_marginTop="10dp"
                   android:divider="@color/gladiator_gold"
-                  android:dividerHeight="0.5dp"/>
+                  android:dividerHeight="1dp"/>
           </LinearLayout>
           EOF
 
-          # 4. Scanner Engine Logic (Lists all apps with permissions)
+          # 4. Advanced Security Logic (Camera/Mic Access Detection)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -92,25 +98,33 @@ jobs:
                   
                   Button scanBtn = findViewById(R.id.scanBtn);
                   ListView appList = findViewById(R.id.appList);
+                  TextView statusText = findViewById(R.id.statusText);
                   
                   scanBtn.setOnClickListener(v -> {
-                      List<String> results = new ArrayList<>();
+                      List<String> threats = new ArrayList<>();
                       PackageManager pm = getPackageManager();
-                      List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+                      List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
                       
-                      for (ApplicationInfo app : apps) {
-                          results.add(app.loadLabel(pm) + " (Checking...)");
+                      for (PackageInfo pi : packages) {
+                          if (pi.requestedPermissions != null) {
+                              for (String perm : pi.requestedPermissions) {
+                                  if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
+                                      threats.add("⚠️ " + pi.applicationInfo.loadLabel(pm) + " [Accesses Camera/Mic]");
+                                      break;
+                                  }
+                              }
+                          }
                       }
                       
-                      ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, results);
+                      ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threats);
                       appList.setAdapter(adapter);
-                      Toast.makeText(this, "Found " + apps.size() + " Items", Toast.LENGTH_SHORT).show();
+                      statusText.setText("Detected " + threats.size() + " potential threats!");
                   });
               }
           }
           EOF
 
-          # 5. Manifest & Build Standard (Ensuring Java 17 stability)
+          # 5. Manifest & Build (Persistence of Success)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -142,5 +156,6 @@ jobs:
       - name: 📦 Delivery
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V2-Scanner
+          name: Gladiator-Shield-V3-Detector
           path: app/build/outputs/apk/debug/*.apk
+
