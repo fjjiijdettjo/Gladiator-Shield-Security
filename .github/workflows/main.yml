@@ -1,4 +1,4 @@
-name: Gladiator Shield Victory Day
+name: Gladiator Shield Victory
 on: [workflow_dispatch]
 
 jobs:
@@ -7,13 +7,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 1. تثبيت الجافا (متوافق مع إصدار 8)
-      - uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. بناء الهيكل (هذا الجزء نجحنا فيه بالأمس)
+      # الضربة القاضية: تثبيت Gradle 8.0 مباشرة قبل أي خطوة أخرى
+      - name: Setup Gradle 8.0 Directly
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.0
+
       - name: Reconstruct Project Structure
         run: |
           mkdir -p app/src/main
@@ -35,12 +40,6 @@ jobs:
           [ -f "AndroidManifest.xml" ] && cp AndroidManifest.xml app/src/main/ || true
           [ -d "src" ] && cp -r src/* app/src/main/ || true
 
-      # 3. إجبار النظام على استخدام Gradle 8 وتجاهل 9
-      - name: Force Gradle 8.0
-        run: |
-          gradle wrapper --gradle-version 8.0
-          chmod +x gradlew
-
-      # 4. البناء النهائي (الضربة القاضية)
       - name: Build APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+        # هنا سنستخدم 'gradle' مباشرة وليس './gradlew' لأننا ثبتناه في الخطوة السابقة
+        run: gradle :app:assembleDebug --no-daemon
