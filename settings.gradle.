@@ -1,2 +1,2 @@
 rootProject.name = "Gladiator-Shield-Security"
-include ':app'
+// تأكد من حذف أي سطر يحتوي على include ':app' إذا لم يكن لديك مجلد اسمه app
