@@ -1,4 +1,4 @@
-name: Gladiator Shield Victory
+name: Gladiator Shield Emergency Force
 on: [workflow_dispatch]
 
 jobs:
@@ -6,23 +6,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Fix Environment & Memory
+      - name: Wipe & Rebuild Structure
+        # سنقوم بمسح ملفات الإعدادات التي قد تكون تالفة وننشئها من جديد
         run: |
-          # 1. منع الـ Daemon المسبب للانهيار وضبط الذاكرة
-          echo "org.gradle.daemon=false" > gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> gradle.properties
-          
-          # 2. ضمان وجود ملف إعدادات صالح
+          rm -f settings.gradle gradle.properties
           echo "rootProject.name = 'GladiatorShield'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+          mkdir -p app
+          # نقل ملف البناء الخاص بك للداخل أو إنشاء واحد افتراضي إذا فشل
+          cp build.gradle app/build.gradle || echo "apply plugin: 'com.android.application'" > app/build.gradle
+          
+          # ضبط الذاكرة لمنع الانهيار الذي أرسلته
+          echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
+          echo "org.gradle.daemon=false" >> gradle.properties
 
-      - name: Build Without Daemon
-        # استخدام أمر البناء مع تعطيل المحرك الخلفي لتجنب الخطأ الذي أرسلته
+      - name: Build With New Wrapper
         run: |
           gradle wrapper --gradle-version 8.0
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew :app:assembleDebug --no-daemon
