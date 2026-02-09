@@ -1,4 +1,4 @@
-name: Gladiator_Shield_Phase_5_RoyalIdentity
+       name: Gladiator_Shield_Phase_6_Dashboard
 on:
   workflow_dispatch:
 
@@ -6,10 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -20,7 +20,7 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 👑 Injecting Royal Branding & Icon
+      - name: 🦾 Injecting Stats Dashboard
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
@@ -28,30 +28,30 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. Colors - Pure Gold & Deep Black
+          # 1. Royal Colors
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <color name="black_bg">#050505</color>
               <color name="gladiator_gold">#D4AF37</color>
-              <color name="pure_white">#FFFFFF</color>
+              <color name="danger_red">#FF1111</color>
+              <color name="safe_green">#00C853</color>
+              <color name="white">#FFFFFF</color>
           </resources>
           EOF
 
-          # 2. Programming the Golden Shield Icon (Vector Drawable)
+          # 2. Golden Shield Icon
           cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
               android:viewportWidth="24"
               android:viewportHeight="24">
-              <path
-                  android:fillColor="#D4AF37"
-                  android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/>
+              <path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/>
           </vector>
           EOF
 
-          # 3. High-End UI with Golden Icon
+          # 3. Dashboard UI with Stats
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -59,45 +59,68 @@ jobs:
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:background="#050505"
-              android:gravity="center_horizontal"
               android:padding="20dp">
+              
               <ImageView
-                  android:layout_width="100dp"
-                  android:layout_height="100dp"
+                  android:layout_width="80dp"
+                  android:layout_height="80dp"
                   android:src="@drawable/ic_shield_gold"
-                  android:layout_marginTop="40dp"/>
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="GLADIATOR SHIELD"
-                  android:textColor="#D4AF37"
-                  android:textSize="26sp"
-                  android:textStyle="bold"
-                  android:layout_marginTop="10dp"/>
-              <View
-                  android:layout_width="150dp"
-                  android:layout_height="2dp"
-                  android:background="#D4AF37"
-                  android:layout_marginTop="5dp"/>
-              <TextView
-                  android:id="@+id/statusText"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="Scanning for threats..."
-                  android:textColor="#FFFFFF"
+                  android:layout_gravity="center_horizontal"
                   android:layout_marginTop="20dp"/>
+              
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="GLADIATOR DASHBOARD"
+                  android:textColor="#D4AF37"
+                  android:textSize="22sp"
+                  android:textStyle="bold"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginBottom="20dp"/>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:weightSum="2">
+                  <TextView
+                      android:id="@+id/safeCount"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="Safe: --"
+                      android:textColor="#00C853"
+                      android:textSize="18sp"
+                      android:gravity="center"/>
+                  <TextView
+                      android:id="@+id/threatCount"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="Threats: --"
+                      android:textColor="#FF1111"
+                      android:textSize="18sp"
+                      android:gravity="center"/>
+              </LinearLayout>
+
+              <View
+                  android:layout_width="match_parent"
+                  android:layout_height="1dp"
+                  android:background="#D4AF37"
+                  android:layout_marginTop="15dp"
+                  android:layout_marginBottom="15dp"/>
+
               <ListView
                   android:id="@+id/threatList"
                   android:layout_width="match_parent"
                   android:layout_height="0dp"
                   android:layout_weight="1"
-                  android:layout_marginTop="20dp"
                   android:divider="#D4AF37"
                   android:dividerHeight="0.5dp"/>
           </LinearLayout>
           EOF
 
-          # 4. Main Security Logic (Inherited from Success)
+          # 4. Advanced Stats Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -112,30 +135,37 @@ jobs:
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
                   
+                  TextView safeTxt = findViewById(R.id.safeCount);
+                  TextView threatTxt = findViewById(R.id.threatCount);
                   ListView list = findViewById(R.id.threatList);
-                  TextView status = findViewById(R.id.statusText);
+                  
                   List<String> threats = new ArrayList<>();
+                  int totalApps = 0;
                   PackageManager pm = getPackageManager();
                   List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
                   
                   for (PackageInfo pi : packages) {
+                      totalApps++;
+                      boolean isThreat = false;
                       if (pi.requestedPermissions != null) {
                           for (String perm : pi.requestedPermissions) {
                               if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  threats.add("🚨 " + pi.applicationInfo.loadLabel(pm));
+                                  threats.add("⚠️ " + pi.applicationInfo.loadLabel(pm));
+                                  isThreat = true;
                                   break;
                               }
                           }
                       }
                   }
                   
-                  status.setText(threats.isEmpty() ? "Device Status: SECURE" : "THREATS DETECTED: " + threats.size());
+                  safeTxt.setText("Safe: " + (totalApps - threats.size()));
+                  threatTxt.setText("Threats: " + threats.size());
                   list.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threats));
               }
           }
           EOF
 
-          # 5. Manifest - Assigning the Icon
+          # 5. Manifest & Build
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -161,11 +191,12 @@ jobs:
           }
           EOF
 
-      - name: 🚀 Building Royal Version
+      - name: 🚀 Build Phase 6
         run: gradle :app:assembleDebug --no-daemon
 
       - name: 📦 Delivery
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Royal-V5
+          name: Gladiator-Shield-Dashboard-V6
           path: app/build/outputs/apk/debug/*.apk
+                   
