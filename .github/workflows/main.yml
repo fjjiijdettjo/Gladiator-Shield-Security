@@ -1,4 +1,4 @@
-name: Gladiator_Final_V6
+name: Gladiator_Unique_Defense_V7
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Build_Core
+      - name: 🦾 Injecting Unique Defense Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
@@ -22,15 +22,14 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          cat <<EOF > app/src/main/res/values/colors.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <color name="black_bg">#050505</color>
-              <color name="gladiator_gold">#D4AF37</color>
-              <color name="white">#FFFFFF</color>
-          </resources>
+          # 1. Royal Identity Icons
+          cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/>
+          </vector>
           EOF
 
+          # 2. Enhanced UI for Trust
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -39,32 +38,55 @@ jobs:
               android:orientation="vertical"
               android:background="#050505"
               android:padding="20dp">
+              <ImageView
+                  android:layout_width="70dp"
+                  android:layout_height="70dp"
+                  android:src="@drawable/ic_shield_gold"
+                  android:layout_gravity="center_horizontal"/>
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="GLADIATOR DASHBOARD"
+                  android:text="GLADIATOR ACTIVE DEFENSE"
                   android:textColor="#D4AF37"
-                  android:textSize="22sp"
+                  android:textSize="20sp"
+                  android:textStyle="bold"
                   android:layout_gravity="center_horizontal"/>
               <TextView
-                  android:id="@+id/safeCount"
-                  android:layout_width="match_parent"
+                  android:id="@+id/trustScore"
+                  android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
+                  android:text="Trust Level: Analyzing..."
                   android:textColor="#FFFFFF"
-                  android:textSize="18sp"
-                  android:gravity="center"
-                  android:layout_marginTop="20dp"/>
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginTop="10dp"/>
+              <View
+                  android:layout_width="match_parent"
+                  android:layout_height="1dp"
+                  android:background="#D4AF37"
+                  android:layout_marginVertical="15dp"/>
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Tap any threat to revoke its power:"
+                  android:textColor="#D4AF37"
+                  android:textSize="12sp"
+                  android:layout_marginBottom="10dp"/>
               <ListView
                   android:id="@+id/threatList"
                   android:layout_width="match_parent"
                   android:layout_height="0dp"
-                  android:layout_weight="1" />
+                  android:layout_weight="1"
+                  android:divider="#333333"
+                  android:dividerHeight="1dp"/>
           </LinearLayout>
           EOF
 
+          # 3. Unique Defense & Kill-Switch Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
           import android.os.Bundle;
           import android.widget.*;
           import android.content.pm.*;
@@ -75,31 +97,48 @@ jobs:
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  TextView safeTxt = findViewById(R.id.safeCount);
+                  
+                  TextView score = findViewById(R.id.trustScore);
                   ListView list = findViewById(R.id.threatList);
-                  List<String> threats = new ArrayList<>();
+                  
+                  List<String> threatNames = new ArrayList<>();
+                  final List<String> packageNames = new ArrayList<>();
+                  
                   PackageManager pm = getPackageManager();
                   List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
+                  
                   for (PackageInfo pi : packages) {
                       if (pi.requestedPermissions != null) {
                           for (String perm : pi.requestedPermissions) {
                               if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  threats.add("⚠️ " + pi.applicationInfo.loadLabel(pm));
+                                  threatNames.add("🚨 Danger: " + pi.applicationInfo.loadLabel(pm));
+                                  packageNames.add(pi.packageName);
                                   break;
                               }
                           }
                       }
                   }
-                  safeTxt.setText("System Protected - Threats: " + threats.size());
-                  list.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threats));
+                  
+                  score.setText(threatNames.isEmpty() ? "🛡️ DEVICE TRUSTED: 100%" : "⚠️ SECURITY RISK: " + threatNames.size() + " Gaps");
+                  list.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threatNames));
+
+                  // The Kill-Switch: Open App Settings on Click
+                  list.setOnItemClickListener((parent, view, position, id) -> {
+                      String pkg = packageNames.get(position);
+                      Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                      intent.setData(Uri.parse("package:" + pkg));
+                      startActivity(intent);
+                      Toast.makeText(this, "Revoke permissions for this app!", Toast.LENGTH_LONG).show();
+                  });
               }
           }
           EOF
 
+          # 4. Final Build Settings
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_shield_gold" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -121,11 +160,11 @@ jobs:
           }
           EOF
 
-      - name: Build_APK
+      - name: Build_Unique_Shield
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V6
+          name: Gladiator-Shield-Unique-V7
           path: app/build/outputs/apk/debug/*.apk
