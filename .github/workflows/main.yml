@@ -1,4 +1,4 @@
-name: Gladiator_Shield_Phase_4_AutoShield
+name: Gladiator_Shield_Phase_5_RoyalIdentity
 on:
   workflow_dispatch:
 
@@ -20,65 +20,87 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: 🦾 Full Clean & Auto-Logic Injection
+      - name: 👑 Injecting Royal Branding & Icon
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/drawable
 
-          # 1. Royal UI Colors
+          # 1. Colors - Pure Gold & Deep Black
           cat <<EOF > app/src/main/res/values/colors.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
-              <color name="black_bg">#0A0A0A</color>
+              <color name="black_bg">#050505</color>
               <color name="gladiator_gold">#D4AF37</color>
-              <color name="danger_red">#FF1111</color>
-              <color name="white">#FFFFFF</color>
+              <color name="pure_white">#FFFFFF</color>
           </resources>
           EOF
 
-          # 2. Modern Dashboard Layout
+          # 2. Programming the Golden Shield Icon (Vector Drawable)
+          cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+              <path
+                  android:fillColor="#D4AF37"
+                  android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/>
+          </vector>
+          EOF
+
+          # 3. High-End UI with Golden Icon
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="#0A0A0A"
-              android:padding="16dp">
+              android:background="#050505"
+              android:gravity="center_horizontal"
+              android:padding="20dp">
+              <ImageView
+                  android:layout_width="100dp"
+                  android:layout_height="100dp"
+                  android:src="@drawable/ic_shield_gold"
+                  android:layout_marginTop="40dp"/>
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="GLADIATOR AUTO-SHIELD"
+                  android:text="GLADIATOR SHIELD"
                   android:textColor="#D4AF37"
-                  android:textSize="24sp"
+                  android:textSize="26sp"
                   android:textStyle="bold"
-                  android:layout_gravity="center_horizontal"
-                  android:layout_marginBottom="10dp"/>
+                  android:layout_marginTop="10dp"/>
+              <View
+                  android:layout_width="150dp"
+                  android:layout_height="2dp"
+                  android:background="#D4AF37"
+                  android:layout_marginTop="5dp"/>
               <TextView
-                  android:id="@+id/statusLabel"
+                  android:id="@+id/statusText"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="Shielding your device..."
+                  android:text="Scanning for threats..."
                   android:textColor="#FFFFFF"
-                  android:layout_gravity="center_horizontal"
-                  android:layout_marginBottom="20dp"/>
+                  android:layout_marginTop="20dp"/>
               <ListView
                   android:id="@+id/threatList"
                   android:layout_width="match_parent"
                   android:layout_height="0dp"
                   android:layout_weight="1"
+                  android:layout_marginTop="20dp"
                   android:divider="#D4AF37"
-                  android:dividerHeight="1dp"/>
+                  android:dividerHeight="0.5dp"/>
           </LinearLayout>
           EOF
 
-          # 3. Intelligent Auto-Scan Logic
+          # 4. Main Security Logic (Inherited from Success)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
-          import android.app.AlertDialog;
           import android.os.Bundle;
           import android.widget.*;
           import android.content.pm.*;
@@ -91,9 +113,7 @@ jobs:
                   setContentView(R.layout.activity_main);
                   
                   ListView list = findViewById(R.id.threatList);
-                  TextView status = findViewById(R.id.statusLabel);
-                  
-                  // Start Auto-Scan immediately
+                  TextView status = findViewById(R.id.statusText);
                   List<String> threats = new ArrayList<>();
                   PackageManager pm = getPackageManager();
                   List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
@@ -102,41 +122,24 @@ jobs:
                       if (pi.requestedPermissions != null) {
                           for (String perm : pi.requestedPermissions) {
                               if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  threats.add("🚨 THREAT: " + pi.applicationInfo.loadLabel(pm));
+                                  threats.add("🚨 " + pi.applicationInfo.loadLabel(pm));
                                   break;
                               }
                           }
                       }
                   }
                   
-                  if(threats.isEmpty()) {
-                      threats.add("✅ Your device is clean and safe!");
-                      status.setText("Protection Active: No threats found.");
-                  } else {
-                      status.setText("WARNING: " + threats.size() + " vulnerabilities found!");
-                  }
-
-                  ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threats);
-                  list.setAdapter(adapter);
-
-                  // Interactivity: Show details on click
-                  list.setOnItemClickListener((parent, view, position, id) -> {
-                      String item = (String) parent.getItemAtPosition(position);
-                      new AlertDialog.Builder(this)
-                          .setTitle("Security Alert")
-                          .setMessage("Application: " + item + "\nRecommendation: Check app settings and revoke Camera/Mic permissions if not needed.")
-                          .setPositiveButton("OK", null)
-                          .show();
-                  });
+                  status.setText(threats.isEmpty() ? "Device Status: SECURE" : "THREATS DETECTED: " + threats.size());
+                  list.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threats));
               }
           }
           EOF
 
-          # 4. Final Manifest & Build Sync
+          # 5. Manifest - Assigning the Icon
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_shield_gold" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -158,11 +161,11 @@ jobs:
           }
           EOF
 
-      - name: 🚀 Final Assembly
+      - name: 🚀 Building Royal Version
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: 📦 Deliver Auto-Shield APK
+      - name: 📦 Delivery
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V4-Auto
+          name: Gladiator-Shield-Royal-V5
           path: app/build/outputs/apk/debug/*.apk
