@@ -1,4 +1,4 @@
- name: Gladiator_Shield_V10_SovereignUI
+    name: Gladiator_Shield_V10_Final
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,110 +14,14 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Sovereign_UI_Logic
+      - name: Build_Sovereign_App
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
-          mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. Sovereign UI Design (Cards & Colors)
-          cat <<EOF > app/src/main/res/layout/activity_main.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="#0A0A0A">
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical"
-                  android:padding="24dp">
-                  
-                  <ImageView
-                      android:layout_width="60dp"
-                      android:layout_height="60dp"
-                      android:src="@drawable/ic_shield_gold"
-                      android:layout_gravity="center_horizontal"
-                      android:layout_marginBottom="8dp"/>
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="GLADIATOR SHIELD"
-                      android:textColor="#D4AF37"
-                      android:textSize="24sp"
-                      android:textStyle="bold"
-                      android:layout_gravity="center_horizontal"/>
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Sovereign Protection Active"
-                      android:textColor="#888888"
-                      android:textSize="12sp"
-                      android:layout_gravity="center_horizontal"
-                      android:layout_marginBottom="24dp"/>
-
-                  <LinearLayout
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical"
-                      android:background="#151515"
-                      android:padding="20dp">
-                      <TextView
-                          android:id="@+id/auditStatus"
-                          android:layout_width="wrap_content"
-                          android:layout_height="wrap_content"
-                          android:textColor="#D4AF37"
-                          android:textStyle="bold"
-                          android:textSize="18sp"/>
-                      <TextView
-                          android:id="@+id/auditDetails"
-                          android:layout_width="wrap_content"
-                          android:layout_height="wrap_content"
-                          android:textColor="#FFFFFF"
-                          android:layout_marginTop="8dp"/>
-                  </LinearLayout>
-
-                  <Button
-                      android:id="@+id/shareBtn"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:text="SHARE SAFETY REPORT"
-                      android:backgroundTint="#D4AF37"
-                      android:textColor="#000000"
-                      android:layout_marginTop="16dp"/>
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Tap to Manage Security:"
-                      android:textColor="#D4AF37"
-                      android:layout_marginTop="24dp"
-                      android:textSize="14sp"/>
-
-                  <LinearLayout
-                      android:id="@+id/threatList"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical"
-                      android:layout_marginTop="12dp"/>
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Developed by: GLADIATOR"
-                      android:textColor="#444444"
-                      android:textSize="10sp"
-                      android:layout_gravity="center_horizontal"
-                      android:layout_marginTop="40dp"/>
-              </LinearLayout>
-          </ScrollView>
-          EOF
-
-          # 2. Sovereign Logic (Sharing & UI Control)
+          # 1. Main Activity (English Only)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -132,56 +36,39 @@ jobs:
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
-                  
-                  startService(new Intent(this, GuardianService.class));
-                  
-                  TextView status = findViewById(R.id.auditStatus);
-                  TextView details = findViewById(R.id.auditDetails);
-                  LinearLayout list = findViewById(R.id.threatList);
-                  Button share = findViewById(R.id.shareBtn);
-                  
-                  int risks = 0;
-                  PackageManager pm = getPackageManager();
-                  List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
-                  
-                  for (PackageInfo pi : packages) {
-                      if (pi.requestedPermissions != null) {
-                          for (String perm : pi.requestedPermissions) {
-                              if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  risks++;
-                                  TextView t = new TextView(this);
-                                  t.setText("🚨 RISK DETECTED: " + pi.applicationInfo.loadLabel(pm));
-                                  t.setTextColor(0xFFD4AF37);
-                                  t.setPadding(0, 10, 0, 10);
-                                  final String pkg = pi.packageName;
-                                  t.setOnClickListener(v -> {
-                                      Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                      i.setData(Uri.parse("package:" + pkg));
-                                      startActivity(i);
-                                  });
-                                  list.addView(t);
-                                  break;
-                              }
-                          }
-                      }
-                  }
-                  
-                  status.setText(risks == 0 ? "STATUS: SECURE" : "STATUS: AT RISK");
-                  details.setText("Gladiator Shield has verified " + packages.size() + " apps. Found " + risks + " privacy gaps.");
-                  
+                  LinearLayout layout = new LinearLayout(this);
+                  layout.setOrientation(LinearLayout.VERTICAL);
+                  layout.setBackgroundColor(0xFF050505);
+                  layout.setPadding(40, 40, 40, 40);
+
+                  TextView title = new TextView(this);
+                  title.setText("GLADIATOR SHIELD V10");
+                  title.setTextColor(0xFFD4AF37);
+                  title.setTextSize(24);
+                  layout.addView(title);
+
+                  TextView dev = new TextView(this);
+                  dev.setText("Developed by: GLADIATOR");
+                  dev.setTextColor(0xFF888888);
+                  layout.addView(dev);
+
+                  Button share = new Button(this);
+                  share.setText("SHARE SECURITY REPORT");
                   share.setOnClickListener(v -> {
-                      Intent sendIntent = new Intent();
-                      sendIntent.setAction(Intent.ACTION_SEND);
-                      sendIntent.putExtra(Intent.EXTRA_TEXT, "My device is protected by Gladiator Shield. Security Level: 100%");
+                      Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                      sendIntent.putExtra(Intent.EXTRA_TEXT, "Protected by Gladiator Shield");
                       sendIntent.setType("text/plain");
-                      startActivity(Intent.createChooser(sendIntent, "Share Trust"));
+                      startActivity(sendIntent);
                   });
+                  layout.addView(share);
+
+                  setContentView(layout);
+                  startService(new Intent(this, GuardianService.class));
               }
           }
           EOF
 
-          # 3. Persistent Core Files
+          # 2. Guardian Service
           cat <<EOF > app/src/main/java/com/gladiator/shield/GuardianService.java
           package com.gladiator.shield;
           import android.app.Service;
@@ -195,11 +82,12 @@ jobs:
           }
           EOF
 
+          # 3. Manifest
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:icon="@drawable/ic_shield_gold" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
-                  <service android:name=".GuardianService" android:enabled="true" android:exported="false" />
+              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+                  <service android:name=".GuardianService" />
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -210,23 +98,18 @@ jobs:
           </manifest>
           EOF
 
-          cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/></vector>
-          EOF
-
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 }
-          compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
+          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } }
           EOF
 
-      - name: Build_Sovereign_V10
+      - name: Build
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Sovereign-V10
+          name: Gladiator-Shield-V10-Final
           path: app/build/outputs/apk/debug/*.apk
-        
+      
