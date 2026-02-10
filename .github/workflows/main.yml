@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V14_KillSwitch
+name: Gladiator_Shield_V15_EliteEdition
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,96 +14,66 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_KillSwitch_Logic
+      - name: Inject_Elite_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/values
 
-          # 1. Kill-Switch UI Design
-          cat <<EOF > app/src/main/res/layout/activity_main.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/mainBg"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="#050505"
-              android:orientation="vertical"
-              android:gravity="center"
-              android:padding="30dp">
-              
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="GLADIATOR SHIELD V14"
-                  android:textColor="#D4AF37"
-                  android:textSize="24sp"
-                  android:textStyle="bold"/>
-
-              <TextView
-                  android:id="@+id/statusText"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="\nSYSTEM SECURE\n"
-                  android:textColor="#FFFFFF"
-                  android:layout_marginTop="20dp"/>
-
-              <Button
-                  android:id="@+id/killSwitchBtn"
-                  android:layout_width="200dp"
-                  android:layout_height="200dp"
-                  android:text="KILL\nTHREATS"
-                  android:backgroundTint="#FF0000"
-                  android:textColor="#FFFFFF"
-                  android:textSize="20sp"
-                  android:textStyle="bold"
-                  android:layout_marginTop="30dp"
-                  android:elevation="10dp"/>
-
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="\nMASTER PROTECTION BY GLADIATOR"
-                  android:textColor="#444444"
-                  android:textSize="10sp"/>
-          </LinearLayout>
+          # 1. Themes for Splash Screen
+          cat <<EOF > app/src/main/res/values/themes.xml
+          <resources>
+              <style name="Theme.Gladiator.Splash" parent="android:Theme.DeviceDefault.NoActionBar">
+                  <item name="android:windowBackground">@drawable/ic_launcher_foreground</item>
+                  <item name="android:windowFullscreen">true</item>
+              </style>
+          </resources>
           EOF
 
-          # 2. Kill-Switch Execution Logic
+          # 2. Main Activity with Splash Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.os.Bundle;
+          import android.os.Handler;
           import android.widget.*;
-          import android.graphics.Color;
+          import android.view.Gravity;
 
           public class MainActivity extends Activity {
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
                   
-                  final LinearLayout bg = findViewById(R.id.mainBg);
-                  final TextView status = findViewById(R.id.statusText);
-                  Button killBtn = findViewById(R.id.killSwitchBtn);
+                  // Simple Splash Logic
+                  LinearLayout layout = new LinearLayout(this);
+                  layout.setOrientation(LinearLayout.VERTICAL);
+                  layout.setBackgroundColor(0xFF050505);
+                  layout.setGravity(Gravity.CENTER);
                   
-                  killBtn.setOnClickListener(v -> {
-                      // Execute Master Kill-Switch Logic
-                      status.setText("ALL THREATS TERMINATED");
-                      status.setTextColor(Color.parseColor("#D4AF37"));
-                      bg.setBackgroundColor(Color.parseColor("#0A0A0A"));
-                      Toast.makeText(this, "Master Kill-Switch Executed Successfully", Toast.LENGTH_LONG).show();
-                  });
+                  TextView title = new TextView(this);
+                  title.setText("GLADIATOR SHIELD\nELITE V15");
+                  title.setTextColor(0xFFD4AF37);
+                  title.setTextSize(28);
+                  title.setGravity(Gravity.CENTER);
+                  layout.addView(title);
+
+                  TextView footer = new TextView(this);
+                  footer.setText("\nSECURED BY GLADIATOR");
+                  footer.setTextColor(0xFF666666);
+                  layout.addView(footer);
+
+                  setContentView(layout);
               }
           }
           EOF
 
-          # 3. Android Manifest
+          # 3. Master Manifest
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground" android:theme="@style/Theme.Gladiator.Splash">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -114,22 +84,26 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Icon & Build Configuration
+          # 4. Icon & Build
           cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#D4AF37" android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/></vector>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#000000" android:path="M0,0h108v108h-108z"/><path android:fillColor="#D4AF37" android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/></vector>
           EOF
 
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } }
+          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33; versionCode 15; versionName "15.0" } }
           EOF
 
-      - name: Build_V14
-        run: gradle :app:assembleDebug --no-daemon
+      - name: Build_Bundle_and_APK
+        run: |
+          gradle :app:assembleDebug --no-daemon
+          gradle :app:bundleDebug --no-daemon
 
-      - name: Upload_Master_APK
+      - name: Upload_Elite_Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V14-KillSwitch
-          path: app/build/outputs/apk/debug/*.apk
+          name: Gladiator-Shield-V15-Elite
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/bundle/debug/*.aab
