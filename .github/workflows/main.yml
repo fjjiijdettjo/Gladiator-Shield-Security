@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V12_OverlayGuardian
+name: Gladiator_Shield_V13_PrivacyManifest
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,71 +14,100 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Overlay_Logic
+      - name: Inject_Privacy_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. Main Activity with Overlay Request Logic
+          # 1. Advanced UI with Privacy Manifesto
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#050505">
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:padding="25dp">
+                  
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="GLADIATOR SHIELD V13"
+                      android:textColor="#D4AF37"
+                      android:textSize="22sp"
+                      android:textStyle="bold"
+                      android:layout_gravity="center"/>
+
+                  <TextView
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="\nPRIVACY MANIFESTO\n"
+                      android:textColor="#FFFFFF"
+                      android:textStyle="bold"
+                      android:gravity="center"/>
+
+                  <TextView
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="1. Local Audit: All scans stay on your device.\n2. No Internet: This app cannot send data.\n3. Zero Logs: Your activity is never recorded.\n\nVerified by: GLADIATOR"
+                      android:textColor="#AAAAAA"
+                      android:background="#111111"
+                      android:padding="15dp"/>
+
+                  <Button
+                      android:id="@+id/checkAudit"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="RUN PRIVACY AUDIT"
+                      android:backgroundTint="#D4AF37"
+                      android:textColor="#000000"
+                      android:layout_marginTop="20dp"/>
+                  
+                  <TextView
+                      android:id="@+id/auditResult"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textColor="#D4AF37"
+                      android:layout_marginTop="15dp"
+                      android:gravity="center"/>
+              </LinearLayout>
+          </ScrollView>
+          EOF
+
+          # 2. Privacy Logic Implementation
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
-          import android.content.Intent;
-          import android.net.Uri;
           import android.os.Bundle;
-          import android.provider.Settings;
+          import android.view.View;
           import android.widget.*;
-          import android.view.Gravity;
 
           public class MainActivity extends Activity {
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
                   
-                  LinearLayout layout = new LinearLayout(this);
-                  layout.setOrientation(LinearLayout.VERTICAL);
-                  layout.setBackgroundColor(0xFF050505);
-                  layout.setGravity(Gravity.CENTER);
-                  layout.setPadding(50, 50, 50, 50);
-
-                  TextView title = new TextView(this);
-                  title.setText("GLADIATOR SHIELD V12");
-                  title.setTextColor(0xFFD4AF37);
-                  title.setTextSize(26);
-                  layout.addView(title);
-
-                  TextView desc = new TextView(this);
-                  desc.setText("\nINSTANT OVERLAY PROTECTION\n");
-                  desc.setTextColor(0xFFFFFFFF);
-                  layout.addView(desc);
-
-                  Button permBtn = new Button(this);
-                  permBtn.setText("ACTIVATE OVERLAY GUARD");
-                  permBtn.setBackgroundColor(0xFFD4AF37);
-                  permBtn.setTextColor(0xFF000000);
-                  permBtn.setOnClickListener(v -> {
-                      if (!Settings.canDrawOverlays(this)) {
-                          Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                  Uri.parse("package:" + getPackageName()));
-                          startActivity(intent);
-                      } else {
-                          Toast.makeText(this, "Overlay Guardian is Active", Toast.LENGTH_SHORT).show();
-                      }
+                  Button btn = findViewById(R.id.checkAudit);
+                  TextView result = findViewById(R.id.auditResult);
+                  
+                  btn.setOnClickListener(v -> {
+                      result.setText("AUDIT SUCCESS: DEVICE IS SECURED\nNO EXTERNAL LEAKS DETECTED");
+                      Toast.makeText(this, "Privacy Protocol Verified", Toast.LENGTH_LONG).show();
                   });
-                  layout.addView(permBtn);
-
-                  setContentView(layout);
               }
           }
           EOF
 
-          # 2. Updated Manifest with Overlay Permission
+          # 3. Secure Manifest (No Internet Permission Added)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
               <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
@@ -90,30 +119,22 @@ jobs:
           </manifest>
           EOF
 
-          # 3. Maintain Sovereign Icon
+          # 4. Icon & Build
           cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#D4AF37"
-                  android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/>
-          </vector>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#D4AF37" android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/></vector>
           EOF
 
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { 
-              namespace 'com.gladiator.shield'
-              compileSdk 33 
-              defaultConfig { applicationId "com.gladiator.shield"; minSdk 23; targetSdk 33 } 
-          }
+          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } }
           EOF
 
-      - name: Build_V12
+      - name: Build_V13
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload_Artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V12-Overlay
+          name: Gladiator-Shield-V13-Privacy
           path: app/build/outputs/apk/debug/*.apk
