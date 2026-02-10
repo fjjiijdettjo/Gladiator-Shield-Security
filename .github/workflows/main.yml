@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V15_EliteEdition
+name: Gladiator_Shield_V16_Dashboard
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,66 +14,121 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Elite_Logic
+      - name: Inject_Dashboard_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/res/values
 
-          # 1. Themes for Splash Screen
-          cat <<EOF > app/src/main/res/values/themes.xml
-          <resources>
-              <style name="Theme.Gladiator.Splash" parent="android:Theme.DeviceDefault.NoActionBar">
-                  <item name="android:windowBackground">@drawable/ic_launcher_foreground</item>
-                  <item name="android:windowFullscreen">true</item>
-              </style>
-          </resources>
+          # 1. Dashboard UI Design (Interactive)
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#050505"
+              android:orientation="vertical"
+              android:padding="20dp"
+              android:gravity="center_horizontal">
+              
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="GLADIATOR SHIELD"
+                  android:textColor="#D4AF37"
+                  android:textSize="26sp"
+                  android:textStyle="bold"
+                  android:layout_marginTop="30dp"/>
+
+              <View
+                  android:layout_width="100dp"
+                  android:layout_height="2dp"
+                  android:background="#D4AF37"
+                  android:layout_marginTop="5dp"/>
+
+              <TextView
+                  android:id="@+id/systemStatus"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="SYSTEM: READY"
+                  android:textColor="#FFFFFF"
+                  android:layout_marginTop="40dp"
+                  android:textSize="18sp"/>
+
+              <Button
+                  android:id="@+id/scanBtn"
+                  android:layout_width="match_parent"
+                  android:layout_height="60dp"
+                  android:text="START SECURITY SCAN"
+                  android:backgroundTint="#D4AF37"
+                  android:textColor="#000000"
+                  android:layout_marginTop="50dp"
+                  android:textStyle="bold"/>
+
+              <Button
+                  android:id="@+id/killBtn"
+                  android:layout_width="match_parent"
+                  android:layout_height="60dp"
+                  android:text="MASTER KILL-SWITCH"
+                  android:backgroundTint="#8B0000"
+                  android:textColor="#FFFFFF"
+                  android:layout_marginTop="20dp"
+                  android:textStyle="bold"/>
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="SECURED BY GLADIATOR"
+                  android:textColor="#444444"
+                  android:layout_marginTop="auto"
+                  android:layout_marginBottom="20dp"/>
+          </LinearLayout>
           EOF
 
-          # 2. Main Activity with Splash Logic
+          # 2. Interactive Logic Implementation
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.os.Bundle;
-          import android.os.Handler;
+          import android.view.View;
           import android.widget.*;
-          import android.view.Gravity;
+          import android.graphics.Color;
 
           public class MainActivity extends Activity {
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
                   
-                  // Simple Splash Logic
-                  LinearLayout layout = new LinearLayout(this);
-                  layout.setOrientation(LinearLayout.VERTICAL);
-                  layout.setBackgroundColor(0xFF050505);
-                  layout.setGravity(Gravity.CENTER);
+                  final TextView status = findViewById(R.id.systemStatus);
+                  Button scan = findViewById(R.id.scanBtn);
+                  Button kill = findViewById(R.id.killBtn);
                   
-                  TextView title = new TextView(this);
-                  title.setText("GLADIATOR SHIELD\nELITE V15");
-                  title.setTextColor(0xFFD4AF37);
-                  title.setTextSize(28);
-                  title.setGravity(Gravity.CENTER);
-                  layout.addView(title);
+                  scan.setOnClickListener(v -> {
+                      status.setText("SCANNING FOR THREATS...");
+                      status.setTextColor(Color.YELLOW);
+                      new android.os.Handler().postDelayed(() -> {
+                          status.setText("SYSTEM: PROTECTED");
+                          status.setTextColor(Color.GREEN);
+                          Toast.makeText(this, "Scan Complete: No Threats Found", Toast.LENGTH_SHORT).show();
+                      }, 2000);
+                  });
 
-                  TextView footer = new TextView(this);
-                  footer.setText("\nSECURED BY GLADIATOR");
-                  footer.setTextColor(0xFF666666);
-                  layout.addView(footer);
-
-                  setContentView(layout);
+                  kill.setOnClickListener(v -> {
+                      status.setText("ALL PROCESSES TERMINATED");
+                      status.setTextColor(Color.RED);
+                      Toast.makeText(this, "Kill-Switch Activated!", Toast.LENGTH_LONG).show();
+                  });
               }
           }
           EOF
 
-          # 3. Master Manifest
+          # 3. Android Manifest & Settings
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground" android:theme="@style/Theme.Gladiator.Splash">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -84,26 +139,21 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Icon & Build
           cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#000000" android:path="M0,0h108v108h-108z"/><path android:fillColor="#D4AF37" android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/></vector>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#D4AF37" android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/></vector>
           EOF
 
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33; versionCode 15; versionName "15.0" } }
+          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33; versionCode 16; versionName "16.0" } }
           EOF
 
-      - name: Build_Bundle_and_APK
-        run: |
-          gradle :app:assembleDebug --no-daemon
-          gradle :app:bundleDebug --no-daemon
+      - name: Build_V16_Dashboard
+        run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload_Elite_Artifacts
+      - name: Upload_Dashboard_APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V15-Elite
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/bundle/debug/*.aab
+          name: Gladiator-Shield-V16-Dashboard
+          path: app/build/outputs/apk/debug/*.apk
