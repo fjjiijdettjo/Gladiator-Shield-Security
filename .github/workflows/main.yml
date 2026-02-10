@@ -21,7 +21,7 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. Main Activity (English Only)
+          # 1. Main Activity (Fixed and Professional)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -56,9 +56,9 @@ jobs:
                   share.setText("SHARE SECURITY REPORT");
                   share.setOnClickListener(v -> {
                       Intent sendIntent = new Intent(Intent.ACTION_SEND);
-                      sendIntent.putExtra(Intent.EXTRA_TEXT, "Protected by Gladiator Shield");
+                      sendIntent.putExtra(Intent.EXTRA_TEXT, "My device is protected by Gladiator Shield V10.");
                       sendIntent.setType("text/plain");
-                      startActivity(sendIntent);
+                      startActivity(Intent.createChooser(sendIntent, "Share Trust"));
                   });
                   layout.addView(share);
 
@@ -82,7 +82,7 @@ jobs:
           }
           EOF
 
-          # 3. Manifest
+          # 3. Android Manifest
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -101,15 +101,18 @@ jobs:
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } }
+          android { 
+              namespace 'com.gladiator.shield'
+              compileSdk 33 
+              defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } 
+          }
           EOF
 
-      - name: Build
+      - name: Execute_Build
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload
+      - name: Final_Artifact_Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V10-Final
+          name: Gladiator-Shield-V10-Sovereign
           path: app/build/outputs/apk/debug/*.apk
-      
