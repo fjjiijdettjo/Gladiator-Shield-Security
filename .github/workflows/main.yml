@@ -1,41 +1,40 @@
-name: Gladiator_Shield_V10_Final
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+name: Gladiator_Shield_V11_IconEdition
+on: [workflow_dispatch, push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.0.2
 
-      - name: Create Sovereign App Structures
+      - name: Inject_Sovereign_Assets
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/mipmap-mdpi
 
-          # Generate MainActivity (English Only)
+          # 1. Official Sovereign Icon (Golden Shield Vector)
+          cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#D4AF37"
+                  android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/>
+          </vector>
+          EOF
+
+          # 2. Main Activity (Keeping the V10 Sovereignty)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
-          import android.content.Intent;
           import android.os.Bundle;
           import android.widget.*;
           import android.view.Gravity;
@@ -47,42 +46,30 @@ jobs:
                   LinearLayout layout = new LinearLayout(this);
                   layout.setOrientation(LinearLayout.VERTICAL);
                   layout.setBackgroundColor(0xFF050505);
-                  layout.setPadding(50, 50, 50, 50);
                   layout.setGravity(Gravity.CENTER);
-
+                  
                   TextView title = new TextView(this);
-                  title.setText("GLADIATOR SHIELD V10");
+                  title.setText("GLADIATOR SHIELD V11");
                   title.setTextColor(0xFFD4AF37);
                   title.setTextSize(26);
-                  title.setGravity(Gravity.CENTER);
                   layout.addView(title);
 
-                  TextView status = new TextView(this);
-                  status.setText("\nPROTECTION: ACTIVE\nDEVELOPER: GLADIATOR\n");
-                  status.setTextColor(0xFFFFFFFF);
-                  status.setGravity(Gravity.CENTER);
-                  layout.addView(status);
-
-                  Button share = new Button(this);
-                  share.setText("SHARE STATUS");
-                  share.setOnClickListener(v -> {
-                      Intent i = new Intent(Intent.ACTION_SEND);
-                      i.setType("text/plain");
-                      i.putExtra(Intent.EXTRA_TEXT, "Secured by Gladiator Shield.");
-                      startActivity(Intent.createChooser(i, "Share"));
-                  });
-                  layout.addView(share);
+                  TextView footer = new TextView(this);
+                  footer.setText("\nSECURE & PRIVATE\nBY GLADIATOR");
+                  footer.setTextColor(0xFF888888);
+                  footer.setGravity(Gravity.CENTER);
+                  layout.addView(footer);
 
                   setContentView(layout);
               }
           }
           EOF
 
-          # Generate Manifest
+          # 3. Manifest with Icon Linking
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -93,7 +80,6 @@ jobs:
           </manifest>
           EOF
 
-          # Generate Build Files
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
@@ -104,11 +90,11 @@ jobs:
           }
           EOF
 
-      - name: Final Build
+      - name: Build_V11
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload Sovereign APK
+      - name: Upload_Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V10-Final
+          name: Gladiator-Shield-V11-Branded
           path: app/build/outputs/apk/debug/*.apk
