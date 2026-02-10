@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V11_IconEdition
+name: Gladiator_Shield_V12_OverlayGuardian
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,28 +14,21 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Sovereign_Assets
+      - name: Inject_Overlay_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/res/mipmap-mdpi
 
-          # 1. Official Sovereign Icon (Golden Shield Vector)
-          cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#D4AF37"
-                  android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/>
-          </vector>
-          EOF
-
-          # 2. Main Activity (Keeping the V10 Sovereignty)
+          # 1. Main Activity with Overlay Request Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
           import android.os.Bundle;
+          import android.provider.Settings;
           import android.widget.*;
           import android.view.Gravity;
 
@@ -43,32 +36,49 @@ jobs:
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+                  
                   LinearLayout layout = new LinearLayout(this);
                   layout.setOrientation(LinearLayout.VERTICAL);
                   layout.setBackgroundColor(0xFF050505);
                   layout.setGravity(Gravity.CENTER);
-                  
+                  layout.setPadding(50, 50, 50, 50);
+
                   TextView title = new TextView(this);
-                  title.setText("GLADIATOR SHIELD V11");
+                  title.setText("GLADIATOR SHIELD V12");
                   title.setTextColor(0xFFD4AF37);
                   title.setTextSize(26);
                   layout.addView(title);
 
-                  TextView footer = new TextView(this);
-                  footer.setText("\nSECURE & PRIVATE\nBY GLADIATOR");
-                  footer.setTextColor(0xFF888888);
-                  footer.setGravity(Gravity.CENTER);
-                  layout.addView(footer);
+                  TextView desc = new TextView(this);
+                  desc.setText("\nINSTANT OVERLAY PROTECTION\n");
+                  desc.setTextColor(0xFFFFFFFF);
+                  layout.addView(desc);
+
+                  Button permBtn = new Button(this);
+                  permBtn.setText("ACTIVATE OVERLAY GUARD");
+                  permBtn.setBackgroundColor(0xFFD4AF37);
+                  permBtn.setTextColor(0xFF000000);
+                  permBtn.setOnClickListener(v -> {
+                      if (!Settings.canDrawOverlays(this)) {
+                          Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                  Uri.parse("package:" + getPackageName()));
+                          startActivity(intent);
+                      } else {
+                          Toast.makeText(this, "Overlay Guardian is Active", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+                  layout.addView(permBtn);
 
                   setContentView(layout);
               }
           }
           EOF
 
-          # 3. Manifest with Icon Linking
+          # 2. Updated Manifest with Overlay Permission
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
+              <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
               <application android:label="Gladiator Shield" android:icon="@drawable/ic_launcher_foreground">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
@@ -80,21 +90,30 @@ jobs:
           </manifest>
           EOF
 
+          # 3. Maintain Sovereign Icon
+          cat <<EOF > app/src/main/res/drawable/ic_launcher_foreground.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#D4AF37"
+                  android:pathData="M54,15L25,28v22c0,18.5 12.4,35.8 29,40 16.6,-4.2 29,-21.5 29,-40V28L54,15z"/>
+          </vector>
+          EOF
+
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
           android { 
               namespace 'com.gladiator.shield'
               compileSdk 33 
-              defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33 } 
+              defaultConfig { applicationId "com.gladiator.shield"; minSdk 23; targetSdk 33 } 
           }
           EOF
 
-      - name: Build_V11
+      - name: Build_V12
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload_Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V11-Branded
+          name: Gladiator-Shield-V12-Overlay
           path: app/build/outputs/apk/debug/*.apk
