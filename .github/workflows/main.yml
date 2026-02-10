@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V9_SecurityAudit
+ name: Gladiator_Shield_V10_SovereignUI
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Security_Audit_Logic
+      - name: Inject_Sovereign_UI_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
@@ -22,84 +22,108 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. New UI with Audit Report Section
+          # 1. Sovereign UI Design (Cards & Colors)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="#050505">
+              android:background="#0A0A0A">
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="vertical"
-                  android:padding="20dp">
+                  android:padding="24dp">
                   
+                  <ImageView
+                      android:layout_width="60dp"
+                      android:layout_height="60dp"
+                      android:src="@drawable/ic_shield_gold"
+                      android:layout_gravity="center_horizontal"
+                      android:layout_marginBottom="8dp"/>
+
                   <TextView
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
-                      android:text="GLADIATOR SECURITY AUDIT"
+                      android:text="GLADIATOR SHIELD"
                       android:textColor="#D4AF37"
-                      android:textSize="22sp"
+                      android:textSize="24sp"
                       android:textStyle="bold"
                       android:layout_gravity="center_horizontal"/>
 
                   <TextView
-                      android:id="@+id/auditSummary"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:textColor="#FFFFFF"
-                      android:background="#1A1A1A"
-                      android:padding="15dp"
-                      android:layout_marginTop="20dp"
-                      android:text="Generating Report..."/>
-
-                  <TextView
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
-                      android:text="Privacy Recommendations:"
-                      android:textColor="#D4AF37"
-                      android:layout_marginTop="20dp"
-                      android:textStyle="italic"/>
-
-                  <TextView
-                      android:id="@+id/privacyTips"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:textColor="#AAAAAA"
-                      android:textSize="14sp"
-                      android:layout_marginTop="10dp"/>
-
-                  <View
-                      android:layout_width="match_parent"
-                      android:layout_height="1dp"
-                      android:background="#D4AF37"
-                      android:layout_marginVertical="15dp"/>
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Detailed Threat List:"
-                      android:textColor="#D4AF37"/>
+                      android:text="Sovereign Protection Active"
+                      android:textColor="#888888"
+                      android:textSize="12sp"
+                      android:layout_gravity="center_horizontal"
+                      android:layout_marginBottom="24dp"/>
 
                   <LinearLayout
-                      android:id="@+id/threatContainer"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="vertical"
-                      android:layout_marginTop="10dp"/>
+                      android:background="#151515"
+                      android:padding="20dp">
+                      <TextView
+                          android:id="@+id/auditStatus"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:textColor="#D4AF37"
+                          android:textStyle="bold"
+                          android:textSize="18sp"/>
+                      <TextView
+                          android:id="@+id/auditDetails"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:textColor="#FFFFFF"
+                          android:layout_marginTop="8dp"/>
+                  </LinearLayout>
+
+                  <Button
+                      android:id="@+id/shareBtn"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="SHARE SAFETY REPORT"
+                      android:backgroundTint="#D4AF37"
+                      android:textColor="#000000"
+                      android:layout_marginTop="16dp"/>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Tap to Manage Security:"
+                      android:textColor="#D4AF37"
+                      android:layout_marginTop="24dp"
+                      android:textSize="14sp"/>
+
+                  <LinearLayout
+                      android:id="@+id/threatList"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:layout_marginTop="12dp"/>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Developed by: GLADIATOR"
+                      android:textColor="#444444"
+                      android:textSize="10sp"
+                      android:layout_gravity="center_horizontal"
+                      android:layout_marginTop="40dp"/>
               </LinearLayout>
           </ScrollView>
           EOF
 
-          # 2. Advanced Audit Logic
+          # 2. Sovereign Logic (Sharing & UI Control)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
           import android.os.Bundle;
-          import android.view.View;
           import android.widget.*;
           import android.content.pm.*;
           import java.util.*;
@@ -112,11 +136,12 @@ jobs:
                   
                   startService(new Intent(this, GuardianService.class));
                   
-                  TextView summary = findViewById(R.id.auditSummary);
-                  TextView tips = findViewById(R.id.privacyTips);
-                  LinearLayout container = findViewById(R.id.threatContainer);
+                  TextView status = findViewById(R.id.auditStatus);
+                  TextView details = findViewById(R.id.auditDetails);
+                  LinearLayout list = findViewById(R.id.threatList);
+                  Button share = findViewById(R.id.shareBtn);
                   
-                  int riskCount = 0;
+                  int risks = 0;
                   PackageManager pm = getPackageManager();
                   List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
                   
@@ -124,37 +149,44 @@ jobs:
                       if (pi.requestedPermissions != null) {
                           for (String perm : pi.requestedPermissions) {
                               if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  riskCount++;
-                                  Button b = new Button(this);
-                                  b.setText("🚨 " + pi.applicationInfo.loadLabel(pm));
-                                  b.setBackgroundColor(0xFF1A1A1A);
-                                  b.setTextColor(0xFFD4AF37);
+                                  risks++;
+                                  TextView t = new TextView(this);
+                                  t.setText("🚨 RISK DETECTED: " + pi.applicationInfo.loadLabel(pm));
+                                  t.setTextColor(0xFFD4AF37);
+                                  t.setPadding(0, 10, 0, 10);
                                   final String pkg = pi.packageName;
-                                  b.setOnClickListener(v -> {
+                                  t.setOnClickListener(v -> {
                                       Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                                       i.setData(Uri.parse("package:" + pkg));
                                       startActivity(i);
                                   });
-                                  container.addView(b);
+                                  list.addView(t);
                                   break;
                               }
                           }
                       }
                   }
                   
-                  summary.setText("Audit Status: Completed\nSecurity Level: " + (riskCount > 5 ? "LOW" : "HIGH") + "\nApps Monitored: " + packages.size());
-                  tips.setText("• Revoke unused camera permissions.\n• Monitor background mic activity.\n• Trust only Gladiator-verified apps.");
+                  status.setText(risks == 0 ? "STATUS: SECURE" : "STATUS: AT RISK");
+                  details.setText("Gladiator Shield has verified " + packages.size() + " apps. Found " + risks + " privacy gaps.");
+                  
+                  share.setOnClickListener(v -> {
+                      Intent sendIntent = new Intent();
+                      sendIntent.setAction(Intent.ACTION_SEND);
+                      sendIntent.putExtra(Intent.EXTRA_TEXT, "My device is protected by Gladiator Shield. Security Level: 100%");
+                      sendIntent.setType("text/plain");
+                      startActivity(Intent.createChooser(sendIntent, "Share Trust"));
+                  });
               }
           }
           EOF
 
-          # 3. Maintain Guardian Service
+          # 3. Persistent Core Files
           cat <<EOF > app/src/main/java/com/gladiator/shield/GuardianService.java
           package com.gladiator.shield;
           import android.app.Service;
           import android.content.Intent;
           import android.os.IBinder;
-
           public class GuardianService extends Service {
               @Override
               public int onStartCommand(Intent intent, int flags, int startId) { return START_STICKY; }
@@ -163,7 +195,6 @@ jobs:
           }
           EOF
 
-          # 4. Manifest & Build (The Royal Standards)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -190,11 +221,12 @@ jobs:
           compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
           EOF
 
-      - name: Build_Audit_V9
+      - name: Build_Sovereign_V10
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Audit-V9
+          name: Gladiator-Shield-Sovereign-V10
           path: app/build/outputs/apk/debug/*.apk
+        
