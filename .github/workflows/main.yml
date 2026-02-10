@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V8_BackgroundGuardian
+name: Gladiator_Shield_V9_SecurityAudit
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Inject_Background_Guardian_Logic
+      - name: Inject_Security_Audit_Logic
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
@@ -22,32 +22,84 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. Background Service Logic (The Guardian)
-          cat <<EOF > app/src/main/java/com/gladiator/shield/GuardianService.java
-          package com.gladiator.shield;
-          import android.app.Service;
-          import android.content.Intent;
-          import android.os.IBinder;
-          import android.util.Log;
+          # 1. New UI with Audit Report Section
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#050505">
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:padding="20dp">
+                  
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="GLADIATOR SECURITY AUDIT"
+                      android:textColor="#D4AF37"
+                      android:textSize="22sp"
+                      android:textStyle="bold"
+                      android:layout_gravity="center_horizontal"/>
 
-          public class GuardianService extends Service {
-              @Override
-              public int onStartCommand(Intent intent, int flags, int startId) {
-                  Log.d("GladiatorShield", "Background Guardian is Active");
-                  return START_STICKY;
-              }
-              @Override
-              public IBinder onBind(Intent intent) { return null; }
-          }
+                  <TextView
+                      android:id="@+id/auditSummary"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textColor="#FFFFFF"
+                      android:background="#1A1A1A"
+                      android:padding="15dp"
+                      android:layout_marginTop="20dp"
+                      android:text="Generating Report..."/>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Privacy Recommendations:"
+                      android:textColor="#D4AF37"
+                      android:layout_marginTop="20dp"
+                      android:textStyle="italic"/>
+
+                  <TextView
+                      android:id="@+id/privacyTips"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textColor="#AAAAAA"
+                      android:textSize="14sp"
+                      android:layout_marginTop="10dp"/>
+
+                  <View
+                      android:layout_width="match_parent"
+                      android:layout_height="1dp"
+                      android:background="#D4AF37"
+                      android:layout_marginVertical="15dp"/>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Detailed Threat List:"
+                      android:textColor="#D4AF37"/>
+
+                  <LinearLayout
+                      android:id="@+id/threatContainer"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:layout_marginTop="10dp"/>
+              </LinearLayout>
+          </ScrollView>
           EOF
 
-          # 2. Updated MainActivity with Service Launch
+          # 2. Advanced Audit Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
           import android.os.Bundle;
+          import android.view.View;
           import android.widget.*;
           import android.content.pm.*;
           import java.util.*;
@@ -58,13 +110,13 @@ jobs:
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
                   
-                  // Start the Background Guardian
                   startService(new Intent(this, GuardianService.class));
                   
-                  TextView score = findViewById(R.id.trustScore);
-                  ListView list = findViewById(R.id.threatList);
-                  List<String> threatNames = new ArrayList<>();
-                  final List<String> packageNames = new ArrayList<>();
+                  TextView summary = findViewById(R.id.auditSummary);
+                  TextView tips = findViewById(R.id.privacyTips);
+                  LinearLayout container = findViewById(R.id.threatContainer);
+                  
+                  int riskCount = 0;
                   PackageManager pm = getPackageManager();
                   List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
                   
@@ -72,25 +124,46 @@ jobs:
                       if (pi.requestedPermissions != null) {
                           for (String perm : pi.requestedPermissions) {
                               if (perm.equals("android.permission.CAMERA") || perm.equals("android.permission.RECORD_AUDIO")) {
-                                  threatNames.add("🚨 RISK: " + pi.applicationInfo.loadLabel(pm));
-                                  packageNames.add(pi.packageName);
+                                  riskCount++;
+                                  Button b = new Button(this);
+                                  b.setText("🚨 " + pi.applicationInfo.loadLabel(pm));
+                                  b.setBackgroundColor(0xFF1A1A1A);
+                                  b.setTextColor(0xFFD4AF37);
+                                  final String pkg = pi.packageName;
+                                  b.setOnClickListener(v -> {
+                                      Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                      i.setData(Uri.parse("package:" + pkg));
+                                      startActivity(i);
+                                  });
+                                  container.addView(b);
                                   break;
                               }
                           }
                       }
                   }
-                  score.setText(threatNames.isEmpty() ? "🛡️ GUARDIAN ACTIVE: 100%" : "⚠️ THREATS FOUND: " + threatNames.size());
-                  list.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, threatNames));
-                  list.setOnItemClickListener((parent, view, position, id) -> {
-                      Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                      intent.setData(Uri.parse("package:" + packageNames.get(position)));
-                      startActivity(intent);
-                  });
+                  
+                  summary.setText("Audit Status: Completed\nSecurity Level: " + (riskCount > 5 ? "LOW" : "HIGH") + "\nApps Monitored: " + packages.size());
+                  tips.setText("• Revoke unused camera permissions.\n• Monitor background mic activity.\n• Trust only Gladiator-verified apps.");
               }
           }
           EOF
 
-          # 3. Manifest with Service Declaration
+          # 3. Maintain Guardian Service
+          cat <<EOF > app/src/main/java/com/gladiator/shield/GuardianService.java
+          package com.gladiator.shield;
+          import android.app.Service;
+          import android.content.Intent;
+          import android.os.IBinder;
+
+          public class GuardianService extends Service {
+              @Override
+              public int onStartCommand(Intent intent, int flags, int startId) { return START_STICKY; }
+              @Override
+              public IBinder onBind(Intent intent) { return null; }
+          }
+          EOF
+
+          # 4. Manifest & Build (The Royal Standards)
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
@@ -106,25 +179,6 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Standard UI & Build Files (Keeping the Royal Identity)
-          cat <<EOF > app/src/main/res/values/colors.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <color name="black_bg">#050505</color>
-              <color name="gladiator_gold">#D4AF37</color>
-              <color name="white">#FFFFFF</color>
-          </resources>
-          EOF
-
-          cat <<EOF > app/src/main/res/layout/activity_main.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#050505" android:padding="20dp">
-              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GLADIATOR SHIELD" android:textColor="#D4AF37" android:textSize="22sp" android:layout_gravity="center_horizontal" android:textStyle="bold"/>
-              <TextView android:id="@+id/trustScore" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:layout_gravity="center_horizontal" android:layout_marginTop="10dp"/>
-              <ListView android:id="@+id/threatList" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="20dp" android:divider="#D4AF37" android:dividerHeight="0.5dp"/>
-          </LinearLayout>
-          EOF
-
           cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/></vector>
           EOF
@@ -136,11 +190,11 @@ jobs:
           compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
           EOF
 
-      - name: Build_Guardian_V8
+      - name: Build_Audit_V9
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-Guardian-V8
+          name: Gladiator-Shield-Audit-V9
           path: app/build/outputs/apk/debug/*.apk
