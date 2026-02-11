@@ -1,4 +1,4 @@
- name: Gladiator_Shield_V18_Final_Fix
+name: Gladiator_Shield_V18_Final_Fix
 on: [workflow_dispatch, push]
 
 jobs:
