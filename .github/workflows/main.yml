@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V16_Fixed
+name: Gladiator_Shield_V17_Imperial
 on: [workflow_dispatch, push]
 
 jobs:
@@ -14,55 +14,89 @@ jobs:
         with:
           gradle-version: 8.0.2
 
-      - name: Repair_And_Build_Dashboard
+      - name: Create_Imperial_Assets
         run: |
           rm -rf app/src/main/*
           mkdir -p app/src/main/java/com/gladiator/shield
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/values
 
-          # 1. Fixed Dashboard Layout
+          # 1. Imperial UI Layout (V17)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="#000000"
-              android:orientation="vertical"
-              android:gravity="center"
-              android:padding="25dp">
+              android:background="#050505"
+              android:padding="20dp">
+
               <TextView
+                  android:id="@+id/title"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="GLADIATOR SHIELD"
+                  android:text="GLADIATOR"
                   android:textColor="#D4AF37"
-                  android:textSize="28sp"
-                  android:textStyle="bold"/>
+                  android:textSize="40sp"
+                  android:textStyle="bold"
+                  android:layout_centerHorizontal="true"
+                  android:layout_marginTop="50dp"/>
+
+              <TextView
+                  android:layout_below="@id/title"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="V17 - IMPERIAL UI"
+                  android:textColor="#888888"
+                  android:layout_centerHorizontal="true"/>
+
+              <ImageView
+                  android:id="@+id/shieldImg"
+                  android:layout_width="180dp"
+                  android:layout_height="180dp"
+                  android:layout_centerInParent="true"
+                  android:src="@drawable/ic_shield_gold"/>
+
               <TextView
                   android:id="@+id/statusText"
+                  android:layout_below="@id/shieldImg"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="SYSTEM READY"
                   android:textColor="#FFFFFF"
-                  android:layout_marginTop="30dp"/>
+                  android:layout_centerHorizontal="true"
+                  android:layout_marginTop="20dp"
+                  android:textSize="18sp"/>
+
               <Button
                   android:id="@+id/btnAction"
                   android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
+                  android:layout_height="65dp"
+                  android:layout_alignParentBottom="true"
+                  android:layout_marginBottom="60dp"
                   android:text="START SHIELD SCAN"
                   android:backgroundTint="#D4AF37"
                   android:textColor="#000000"
-                  android:layout_marginTop="40dp"/>
+                  android:textStyle="bold"
+                  android:textSize="18sp"/>
+
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="SECURED BY GLADIATOR"
-                  android:textColor="#555555"
-                  android:layout_marginTop="50dp"/>
-          </LinearLayout>
+                  android:textColor="#444444"
+                  android:layout_alignParentBottom="true"
+                  android:layout_centerHorizontal="true"
+                  android:layout_marginBottom="10dp"/>
+          </RelativeLayout>
           EOF
 
-          # 2. Fixed Java Logic
+          # 2. Golden Shield Vector Icon
+          cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="200dp" android:height="200dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12V5l-9,-4zM12,11.99h7c-0.53,4.12 -3.28,7.79 -7,8.94V12H5V6.3l7,-3.11v8.8z"/></vector>
+          EOF
+
+          # 3. Main Logic (Imperial Version)
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -77,20 +111,21 @@ jobs:
                   setContentView(R.layout.activity_main);
                   final TextView status = findViewById(R.id.statusText);
                   Button btn = findViewById(R.id.btnAction);
+                  
                   btn.setOnClickListener(v -> {
                       status.setText("SHIELD ACTIVE & PROTECTING");
-                      status.setTextColor(Color.GREEN);
-                      Toast.makeText(this, "Master Protection Enabled", Toast.LENGTH_SHORT).show();
+                      status.setTextColor(Color.parseColor("#00FF00"));
+                      Toast.makeText(this, "Imperial Protection Engaged", Toast.LENGTH_LONG).show();
                   });
               }
           }
           EOF
 
-          # 3. Manifest & Config
+          # 4. Final Configuration
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield">
-              <application android:label="Gladiator Shield" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+              <application android:label="Gladiator Shield" android:icon="@drawable/ic_shield_gold" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -104,14 +139,14 @@ jobs:
           echo "include ':app'" > settings.gradle
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
-          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33; versionCode 16; versionName "16.0" } }
+          android { namespace 'com.gladiator.shield'; compileSdk 33; defaultConfig { applicationId "com.gladiator.shield"; minSdk 21; targetSdk 33; versionCode 17; versionName "17.0" } }
           EOF
 
-      - name: Execute_Repair_Build
+      - name: Build_Imperial_V17
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload_Fixed_APK
+      - name: Upload_Imperial_APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V16-Fixed
+          name: Gladiator-Shield-V17-Imperial
           path: app/build/outputs/apk/debug/*.apk
