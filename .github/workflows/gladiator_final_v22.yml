@@ -1,0 +1,45 @@
+name: Gladiator_Final_Success
+on: [workflow_dispatch, push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Create_Gladiator_App
+        run: |
+          mkdir -p app/src/main/java/com/gladiator/shield app/src/main/res/layout app/src/main/res/drawable
+          # UI Layout
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000000">
+          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GLADIATOR V22" android:textColor="#D4AF37" android:textSize="32sp" android:layout_centerHorizontal="true" android:layout_marginTop="50dp" android:textStyle="bold"/>
+          <ImageView android:layout_width="200dp" android:layout_height="200dp" android:src="@drawable/ic_shield" android:layout_centerInParent="true"/>
+          <Button android:layout_width="match_parent" android:layout_height="60dp" android:text="START PROTECTION" android:backgroundTint="#D4AF37" android:textColor="#000000" android:layout_alignParentBottom="true" android:layout_marginBottom="80dp" android:layout_marginHorizontal="30dp"/>
+          </RelativeLayout>
+          EOF
+          # Icon
+          cat <<EOF > app/src/main/res/drawable/ic_shield.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="200dp" android:height="200dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/></vector>
+          EOF
+          # Java Code
+          echo "package com.gladiator.shield; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { protected void onCreate(Bundle s) { super.onCreate(s); setContentView(R.layout.activity_main); } }" > app/src/main/java/com/gladiator/shield/MainActivity.java
+          # Manifest
+          echo "<manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.gladiator.shield'><application android:label='Gladiator' android:icon='@drawable/ic_shield' android:theme='@android:style/Theme.DeviceDefault.NoActionBar'><activity android:name='.MainActivity' android:exported='true'><intent-filter><action android:name='android.intent.action.MAIN'/><category android:name='android.intent.category.LAUNCHER'/></intent-filter></activity></application></manifest>" > app/src/main/AndroidManifest.xml
+          # Configuration V22 (English)
+          echo "include ':app'" > settings.gradle
+          echo "apply plugin: 'com.android.application'" > app/build.gradle
+          echo "android { namespace 'com.gladiator.shield' " >> app/build.gradle
+          echo "compileSdk 33 " >> app/build.gradle
+          echo "defaultConfig { applicationId 'com.gladiator.shield' " >> app/build.gradle
+          echo "minSdk 21 " >> app/build.gradle
+          echo "targetSdk 33 " >> app/build.gradle
+          echo "versionCode 22 " >> app/build.gradle
+          echo "versionName '22.0' } }" >> app/build.gradle
+          gradle :app:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gladiator-V22-Final
+          path: app/build/outputs/apk/debug/*.apk
