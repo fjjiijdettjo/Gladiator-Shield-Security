@@ -1,4 +1,4 @@
-name: Gladiator_Shield_V18_Final_Fix
+name: Gladiator_Shield_V19_Install_Fix
 on: [workflow_dispatch, push]
 
 jobs:
@@ -10,18 +10,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.0.2
 
       - name: Build_Imperial_UI
         run: |
-          rm -rf app/src/main/*
-          mkdir -p app/src/main/java/com/gladiator/shield
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/drawable
-
-          # 1. Imperial Layout - Matching your exact request
+          mkdir -p app/src/main/java/com/gladiator/shield app/src/main/res/layout app/src/main/res/drawable
+          
+          # Layout XML - V19
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -29,58 +23,19 @@ jobs:
               android:layout_height="match_parent"
               android:background="#050505"
               android:padding="20dp">
-              <TextView
-                  android:id="@+id/t"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="GLADIATOR"
-                  android:textColor="#D4AF37"
-                  android:textSize="42sp"
-                  android:textStyle="bold"
-                  android:layout_centerHorizontal="true"
-                  android:layout_marginTop="50dp"/>
-              <TextView
-                  android:layout_below="@id/t"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="V18 - IMPERIAL EDITION"
-                  android:textColor="#8B6B13"
-                  android:layout_centerHorizontal="true"/>
-              <ImageView
-                  android:id="@+id/s"
-                  android:layout_width="200dp"
-                  android:layout_height="200dp"
-                  android:layout_centerInParent="true"
-                  android:src="@drawable/ic_shield_gold"/>
-              <TextView
-                  android:id="@+id/status"
-                  android:layout_below="@id/s"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="SYSTEM READY"
-                  android:textColor="#FFFFFF"
-                  android:layout_centerHorizontal="true"
-                  android:layout_marginTop="25dp"
-                  android:textSize="18sp"/>
-              <Button
-                  android:id="@+id/btn"
-                  android:layout_width="match_parent"
-                  android:layout_height="65dp"
-                  android:layout_alignParentBottom="true"
-                  android:layout_marginBottom="70dp"
-                  android:text="START SHIELD SCAN"
-                  android:backgroundTint="#D4AF37"
-                  android:textColor="#000000"
-                  android:textStyle="bold"/>
+              <TextView android:id="@+id/t" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GLADIATOR" android:textColor="#D4AF37" android:textSize="42sp" android:textStyle="bold" android:layout_centerHorizontal="true" android:layout_marginTop="50dp"/>
+              <ImageView android:id="@+id/s" android:layout_width="200dp" android:layout_height="200dp" android:layout_centerInParent="true" android:src="@drawable/ic_shield_gold"/>
+              <TextView android:id="@+id/status" android:layout_below="@id/s" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SYSTEM READY" android:textColor="#FFFFFF" android:layout_centerHorizontal="true" android:layout_marginTop="25dp" android:textSize="18sp"/>
+              <Button android:id="@+id/btn" android:layout_width="match_parent" android:layout_height="65dp" android:layout_alignParentBottom="true" android:layout_marginBottom="70dp" android:text="START SHIELD SCAN" android:backgroundTint="#D4AF37" android:textColor="#000000" android:textStyle="bold"/>
           </RelativeLayout>
           EOF
 
-          # 2. Golden Shield Icon
+          # Shield Icon - Gold
           cat <<EOF > app/src/main/res/drawable/ic_shield_gold.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="200dp" android:height="200dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="#D4AF37" android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/></vector>
           EOF
 
-          # 3. Logic
+          # Java Logic
           cat <<EOF > app/src/main/java/com/gladiator/shield/MainActivity.java
           package com.gladiator.shield;
           import android.app.Activity;
@@ -88,45 +43,31 @@ jobs:
           import android.widget.*;
           import android.graphics.Color;
           public class MainActivity extends Activity {
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
+              protected void onCreate(Bundle s) {
+                  super.onCreate(s);
                   setContentView(R.layout.activity_main);
-                  final TextView status = findViewById(R.id.status);
-                  Button btn = findViewById(R.id.btn);
-                  btn.setOnClickListener(v -> {
-                      status.setText("SHIELD ACTIVE");
-                      status.setTextColor(Color.parseColor("#D4AF37"));
+                  final TextView st = findViewById(R.id.status);
+                  Button b = findViewById(R.id.btn);
+                  b.setOnClickListener(v -> {
+                      st.setText("SHIELD ACTIVE");
+                      st.setTextColor(Color.parseColor("#D4AF37"));
                   });
               }
           }
           EOF
 
-          # 4. Corrected Build Config (Standard Syntax)
-          cat <<EOF > app/src/main/AndroidManifest.xml
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gladiator.shield"><application android:label="Gladiator Shield" android:icon="@drawable/ic_shield_gold" android:theme="@android:style/Theme.DeviceDefault.NoActionBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHer" /></intent-filter></activity></application></manifest>
-          EOF
+          # Manifest
+          echo "<manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.gladiator.shield'><application android:label='Gladiator Shield' android:icon='@drawable/ic_shield_gold' android:theme='@android:style/Theme.DeviceDefault.NoActionBar'><activity android:name='.MainActivity' android:exported='true'><intent-filter><action android:name='android.intent.action.MAIN'/><category android:name='android.intent.category.LAUNCHER'/></intent-filter></activity></application></manifest>" > app/src/main/AndroidManifest.xml
+
+          # Build Config V19
           echo "include ':app'" > settings.gradle
-          cat <<EOF > app/build.gradle
-          apply plugin: 'com.android.application'
-          android {
-              namespace 'com.gladiator.shield'
-              compileSdk 33
-              defaultConfig {
-                  applicationId "com.gladiator.shield"
-                  minSdk 21
-                  targetSdk 33
-                  versionCode 18
-                  versionName "18.0"
-              }
-          }
-          EOF
+          echo -e "apply plugin: 'com.android.application'\nandroid {\nnamespace 'com.gladiator.shield'\ncompileSdk 33\ndefaultConfig {\napplicationId 'com.gladiator.shield'\nminSdk 21\ntargetSdk 33\nversionCode 19\nversionName '19.0'\n}\n}" > app/build.gradle
 
       - name: Build
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload
+      - name: Upload_V19
         uses: actions/upload-artifact@v4
         with:
-          name: Gladiator-Shield-V18-Final
+          name: Gladiator-Shield-V19-Install-Fix
           path: app/build/outputs/apk/debug/*.apk
